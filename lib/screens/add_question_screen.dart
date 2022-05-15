@@ -1,9 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
 import 'package:diary_app/framework/widgets/skywa_snackbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:diary_app/screens/view_all_folders_screen.dart';
+import 'package:diary_app/widgets/loading_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 
 import '../framework/widgets/skywa_bottom_sheet.dart';
 import '../framework/widgets/skywa_button.dart';
@@ -11,15 +12,17 @@ import '../framework/widgets/skywa_radio_group.dart';
 import '../framework/widgets/skywa_text.dart';
 import '../framework/widgets/skywa_textformfield.dart';
 import '../models/folder_model.dart';
-import '../models/question_model.dart';
 import '../services/color_themes.dart';
 import '../services/global_methods.dart';
 
 class AddQuestionScreen extends StatefulWidget {
   final FolderModel folderModel;
+  final Function fetchAllQuestions;
+
   const AddQuestionScreen({
     Key key,
     @required this.folderModel,
+    @required this.fetchAllQuestions,
   }) : super(key: key);
 
   @override
@@ -32,16 +35,14 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   final TextEditingController _questionTypeController = TextEditingController();
   final TextEditingController _questionTypeAnswerController =
       TextEditingController();
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  CollectionReference _questionReference;
+  List<dynamic> questions = [];
   bool isRequired = false;
-
   List<String> availableQuestionTypes = [
     'Text',
     'Name',
     'Email',
     'Phone',
+    'Number',
     'Url',
     'Multiline',
     'Date',
@@ -51,8 +52,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     'DropDown',
     'Slider',
   ];
-  // List<String> genders = ['Male', 'Female', 'Others'];
-  // String selectedChoice = '';
+  bool isLoading = false;
 
   Widget buildQuestionTypeAnswerWidget() {
     print(_questionTypeController.text);
@@ -69,18 +69,21 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       /// phone
       return Container();
     } else if (_questionTypeController.text == availableQuestionTypes[4]) {
-      /// url
+      /// number
       return Container();
     } else if (_questionTypeController.text == availableQuestionTypes[5]) {
-      /// multiline
+      /// url
       return Container();
     } else if (_questionTypeController.text == availableQuestionTypes[6]) {
-      /// date
+      /// multiline
       return Container();
     } else if (_questionTypeController.text == availableQuestionTypes[7]) {
-      /// address
+      /// date
       return Container();
     } else if (_questionTypeController.text == availableQuestionTypes[8]) {
+      /// address
+      return Container();
+    } else if (_questionTypeController.text == availableQuestionTypes[9]) {
       /// chip
       /*return Wrap(
         spacing: 5.0,
@@ -114,10 +117,10 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         labelText: 'Answers',
         hintText: 'Options for Chip separated by new line',
       );
-    } else if (_questionTypeController.text == availableQuestionTypes[9]) {
+    } else if (_questionTypeController.text == availableQuestionTypes[10]) {
       /// switch
       return Container();
-    } else if (_questionTypeController.text == availableQuestionTypes[10]) {
+    } else if (_questionTypeController.text == availableQuestionTypes[11]) {
       /// dropdown
       return SkywaTextFormField.multiline(
         textEditingController: _questionTypeAnswerController,
@@ -162,23 +165,42 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         return;
       } else {
         /// everything is valid
+        setState(() {
+          isLoading = true;
+        });
         String questionId = GlobalMethods.generateUniqueId();
         String questionCreationDate = DateTime.now().toString();
-        QuestionModel questionModel = QuestionModel(
+        /*QuestionModel questionModel = QuestionModel(
           questionId: questionId,
           questionText: _questionController.text,
           isRequired: isRequired,
           questionCreationDate: questionCreationDate,
           questionType: _questionTypeController.text,
           questionTypeAnswer: _questionTypeAnswerController.text,
-        );
-        print(questionModel);
-        Navigator.pop(context);
-        await _questionReference
-            .doc(questionId)
-            .set(questionModel.toMap())
-            .then((value) {
-          print('Question added: $questionModel');
+        );*/
+        Map<String, dynamic> questionToBeAdded = {
+          'questionId': questionId,
+          'questionText': _questionController.text,
+          'isRequired': isRequired,
+          'questionCreationDate': questionCreationDate,
+          'questionType': _questionTypeController.text,
+          'questionTypeAnswer': _questionTypeAnswerController.text,
+        };
+        setState(() {
+          questions.add(questionToBeAdded);
+        });
+        folderReference
+            .doc(folderModel.folderId)
+            .update({'questions': questions}).then((value) {
+          print('Question added: $questionToBeAdded');
+        }).then((value) {
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pop(context);
+          setState(() {
+            widget.fetchAllQuestions();
+          });
         });
       }
     }
@@ -189,12 +211,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     // TODO: implement initState
     super.initState();
     folderModel = widget.folderModel;
-    _questionReference = _firebaseFirestore
-        .collection('users')
-        .doc(_firebaseAuth.currentUser.uid)
-        .collection('folders')
-        .doc(folderModel.folderId)
-        .collection('questions');
+    questions = folderModel.questions;
   }
 
   @override
@@ -218,81 +235,88 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ],
         ),
       ),
-      body: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(10.0),
-        children: [
-          /// multiline textformfield
-          SkywaTextFormField.multiline(
-            textEditingController: _questionController,
-            labelText: 'Question',
-            hintText: 'Enter your question',
-            onChanged: (value) {
-              setState(() {
-                _questionController;
-              });
-            },
-            suffixIcon: _questionController.text.isNotEmpty
-                ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _questionController.clear();
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: ColorThemes.primaryColor,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 10.0),
-
-          /// required switch
-          SwitchListTile(
-            title: SkywaText(text: 'Required'),
-            value: isRequired,
-            onChanged: (value) {
-              setState(() {
-                isRequired = value;
-              });
-            },
-            activeColor: ColorThemes.primaryColor,
-          ),
-          const SizedBox(height: 10.0),
-
-          /// question type textformfield & bottom sheet
-          GestureDetector(
-            onTap: () {
-              SkywaBottomSheet(
-                context: context,
-                color: Colors.transparent,
-                content: SkywaRadioGroup(
-                  texts: availableQuestionTypes,
-                  selectedValue: _questionTypeController.text,
-                  backgroundColor: Colors.white,
+      body: isLoading
+          ? const LoadingWidget()
+          : ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(10.0),
+              children: [
+                /// multiline textformfield
+                SkywaTextFormField.multiline(
+                  textEditingController: _questionController,
+                  labelText: 'Question',
+                  hintText: 'Enter your question',
                   onChanged: (value) {
                     setState(() {
-                      _questionTypeController.text = value;
+                      _questionController;
                     });
-                    Navigator.pop(context);
                   },
+                  suffixIcon: _questionController.text.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _questionController.clear();
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: ColorThemes.primaryColor,
+                          ),
+                        )
+                      : null,
                 ),
-              );
-            },
-            child: SkywaTextFormField.none(
-              textEditingController: _questionTypeController,
-              labelText: 'Question Type',
-              hintText: 'Choose question type...',
-              enabled: false,
-              readOnly: true,
-            ),
-          ),
-          const SizedBox(height: 20.0),
+                const SizedBox(height: 10.0),
 
-          buildQuestionTypeAnswerWidget(),
-        ],
-      ),
+                /// required switch
+                SwitchListTile(
+                  title: SkywaText(text: 'Required'),
+                  value: isRequired,
+                  onChanged: (value) {
+                    setState(() {
+                      isRequired = value;
+                    });
+                  },
+                  activeColor: ColorThemes.primaryColor,
+                ),
+                const SizedBox(height: 10.0),
+
+                /// question type textformfield & bottom sheet
+                GestureDetector(
+                  onTap: () {
+                    SkywaBottomSheet(
+                      context: context,
+                      // color: Colors.transparent,
+                      content: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          SkywaRadioGroup(
+                            texts: availableQuestionTypes,
+                            selectedValue: _questionTypeController.text,
+                            backgroundColor: Colors.white,
+                            onChanged: (value) {
+                              setState(() {
+                                _questionTypeController.text = value;
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: SkywaTextFormField.none(
+                    textEditingController: _questionTypeController,
+                    labelText: 'Question Type',
+                    hintText: 'Choose question type...',
+                    enabled: false,
+                    readOnly: true,
+                  ),
+                ),
+                const SizedBox(height: 20.0),
+
+                buildQuestionTypeAnswerWidget(),
+              ],
+            ),
     );
   }
 }

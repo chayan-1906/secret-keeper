@@ -21,13 +21,16 @@ import 'package:shimmer/shimmer.dart';
 import '../framework/widgets/skywa_radio_group.dart';
 import '../services/color_themes.dart';
 import '../widgets/question_row_widget.dart';
+import 'view_all_folders_screen.dart';
 
 class ViewAllQuestionsScreen extends StatefulWidget {
   final FolderModel folderModel;
+  final Function refreshViewAllFolders;
 
   const ViewAllQuestionsScreen({
     Key key,
     @required this.folderModel,
+    @required this.refreshViewAllFolders,
   }) : super(key: key);
 
   @override
@@ -36,10 +39,6 @@ class ViewAllQuestionsScreen extends StatefulWidget {
 
 class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
   FolderModel folderModel;
-  List _questions = [];
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  CollectionReference _questionReference;
   bool isLoading = false;
 
   Widget questionShimmer() {
@@ -72,144 +71,35 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
     setState(() {
       isLoading = true;
     });
-    _questionReference.doc(questionModel.questionId).delete().then((value) {
+    folderModel.questions.removeWhere(
+      (_question) => questionModel.questionId == _question['questionId'],
+    );
+    folderReference
+        .doc(folderModel.folderId)
+        .update({'questions': folderModel.questions}).then((value) {
       setState(() {
         isLoading = false;
+      });
+      setState(() {
+        widget.refreshViewAllFolders;
       });
       // fetchAllQuestions();
     });
   }
 
-  /*void showAlertDialog() {
-    SkywaAlertDialog.success(
-      context: context,
-      // barrierDismissible: false,
-      titleText: 'Add New Question',
-      titlePadding: EdgeInsets.only(
-        top: Device.screenHeight * 0.025,
-        bottom: Device.screenHeight * 0.025,
-        left: Device.screenWidth * 0.05,
-        right: Device.screenWidth * 0.01,
-      ),
-      fontSize: 22.0,
-      content: Container(
-        width: Device.screenWidth,
-        constraints: BoxConstraints(
-          minHeight: Device.screenHeight * 0.08,
-          maxHeight: Device.screenHeight * 0.55,
-        ),
-        padding: const EdgeInsets.all(12.0),
-        // TODO: if _questionController.isNotEmpty then show save button
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: 1,
-          itemBuilder: (BuildContext context, int index) {
-            _questionController.clear();
-            isRequired = false;
-            _questionTypeController.clear();
-            _questionTypeAnswerController.clear();
-            selectedChoice = '';
-            return Column(
-              children: [
-                StatefulBuilder(builder: (context, setState) {
-                  return Column(
-                    children: [
-                      SkywaTextFormField.multiline(
-                        textEditingController: _questionController,
-                        labelText: 'Question',
-                        hintText: 'Enter your question',
-                        onChanged: (value) {
-                          setState(() {
-                            _questionController;
-                          });
-                        },
-                        suffixIcon: _questionController.text.isNotEmpty
-                            ? IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _questionController.clear();
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.close_rounded,
-                                  color: ColorThemes.primaryColor,
-                                ),
-                              )
-                            : null,
-                      ),
-                      SwitchListTile(
-                        title: SkywaText(text: 'Is Required'),
-                        value: isRequired,
-                        onChanged: (value) {
-                          setState(() {
-                            isRequired = !isRequired;
-                          });
-                        },
-                        activeColor: ColorThemes.primaryColor,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          SkywaBottomSheet(
-                            context: context,
-                            color: Colors.transparent,
-                            content: SkywaRadioGroup(
-                              texts: availableQuestionTypes,
-                              selectedValue: _questionTypeController.text,
-                              backgroundColor: Colors.white,
-                              onChanged: (value) {
-                                setState(() {
-                                  _questionTypeController.text = value;
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                          );
-                        },
-                        child: SkywaTextFormField.none(
-                          textEditingController: _questionTypeController,
-                          labelText: 'Question Type',
-                          hintText: 'Choose question type...',
-                          enabled: false,
-                          readOnly: true,
-                        ),
-                      ),
-                      buildQuestionTypeAnswerWidget(),
-                      const SizedBox(height: 10.0),
-                      if (_questionController.text.isNotEmpty &&
-                          _questionTypeController.text.isNotEmpty &&
-                          _questionTypeAnswerController.text.isNotEmpty)
-                        SkywaButton.save(
-                            text: 'Save',
-                            onTap: () {
-                              Navigator.pop(context);
-                              setState(() {
-                                _questionController;
-                              });
-                              saveQuestion();
-                              // _questionController.clear();
-                            }),
-                    ],
-                  );
-                }),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }*/
+  Future<void> fetchAllQuestions() async {
+    print('fetchAllQuestions called');
+    setState(() {
+      folderModel.questions;
+    });
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     folderModel = widget.folderModel;
-    _questionReference = _firebaseFirestore
-        .collection('users')
-        .doc(_firebaseAuth.currentUser.uid)
-        .collection('folders')
-        .doc(folderModel.folderId)
-        .collection('questions');
+    // questions = folderModel.questions;
   }
 
   @override
@@ -221,7 +111,150 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
           appbarText: 'All Questions',
         ),
       ),
-      body: Container(
+      body: isLoading
+          ? questionShimmer()
+          : folderModel.questions.isNotEmpty
+              ? Container(
+                  height: Device.screenHeight,
+                  width: Device.screenWidth,
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: folderModel.questions.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Map<String, dynamic> _question =
+                              folderModel.questions[index];
+                          QuestionModel questionModel = QuestionModel(
+                            questionId: _question['questionId'],
+                            questionText: _question['questionText'],
+                            isRequired: _question['isRequired'],
+                            questionCreationDate:
+                                _question['questionCreationDate'],
+                            questionType: _question['questionType'],
+                            questionTypeAnswer: _question['questionTypeAnswer'],
+                          );
+                          return Slidable(
+                            direction: Axis.horizontal,
+                            actionPane: const SlidableStrechActionPane(),
+                            actionExtentRatio: 0.20,
+                            secondaryActions: [
+                              IconButton(
+                                onPressed: () {
+                                  SkywaAlertDialog.error(
+                                    context: context,
+                                    titleText: 'Delete Question',
+                                    titlePadding: const EdgeInsets.all(15.0),
+                                    icon: const Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    content: Container(
+                                      width: Device.screenWidth,
+                                      height: 130.0,
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: ListView(
+                                        shrinkWrap: true,
+                                        children: [
+                                          SkywaText(
+                                            text:
+                                                'Do you want to delete this question?',
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          const SizedBox(height: 20.0),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              SkywaButton.save(
+                                                text: 'Cancel',
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                              const SizedBox(width: 20.0),
+                                              SkywaButton.delete(
+                                                text: 'Delete',
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  deleteQuestion(
+                                                      questionModel:
+                                                          questionModel);
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.delete_rounded,
+                                  color: ColorThemes.errorColor,
+                                ),
+                              ),
+                            ],
+                            child:
+                                QuestionRowWidget(questionModel: questionModel),
+                          );
+                        },
+                      ),
+                      Positioned(
+                        bottom: 10.0,
+                        right: 10.0,
+                        child: SkywaFloatingActionButton(
+                          iconData: Icons.add_rounded,
+                          onTap: () {
+                            // showAlertDialog();
+                            Navigator.push(
+                              context,
+                              PageTransition(
+                                child: AddQuestionScreen(
+                                  folderModel: folderModel,
+                                  fetchAllQuestions: fetchAllQuestions,
+                                ),
+                                type: PageTransitionType.rippleRightUp,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : SizedBox(
+                  width: Device.screenWidth,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SkywaFloatingActionButton(
+                        iconData: Icons.add_rounded,
+                        onTap: () {
+                          // showAlertDialog();
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              child: AddQuestionScreen(
+                                folderModel: folderModel,
+                                fetchAllQuestions: fetchAllQuestions,
+                              ),
+                              type: PageTransitionType.rippleRightUp,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10.0),
+                      SkywaText(
+                        text: 'Add New Question',
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ],
+                  ),
+                ),
+      /*body: Container(
         height: Device.screenHeight,
         child: StreamBuilder(
             stream: _questionReference
@@ -371,7 +404,7 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
                       ),
                     );
             }),
-      ),
+      ),*/
     );
   }
 }

@@ -6,7 +6,7 @@ class FolderModel {
   String folderId;
   String folderName;
   String folderCreationDate;
-  List<QuestionModel> questions;
+  List<dynamic> questions;
 
   FolderModel({
     @required this.folderId,
@@ -19,17 +19,12 @@ class FolderModel {
     folderId = queryDocumentSnapshot.get('folderId');
     folderName = queryDocumentSnapshot.get('folderName');
     folderCreationDate = queryDocumentSnapshot.get('folderCreationDate');
+    // questions = queryDocumentSnapshot.get('questions');
     questions = [];
     for (var question in queryDocumentSnapshot.get('questions')) {
       var questionFromJson = QuestionModel.fromJson(question);
-      questions.add(questionFromJson);
+      questions.add(questionFromJson.toMap());
     }
-    /*return FolderModel(
-      folderId: queryDocumentSnapshot.get('folderId'),
-      folderName: queryDocumentSnapshot.get('folderName'),
-      folderCreationDate: queryDocumentSnapshot.get('folderCreationDate'),
-      questions: queryDocumentSnapshot.get('questions'),
-    );*/
   }
 
   Map<String, dynamic> toMap() {

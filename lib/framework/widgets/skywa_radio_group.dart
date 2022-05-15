@@ -47,24 +47,25 @@ class _SkywaRadioGroupState extends State<SkywaRadioGroup> {
       margin: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? Colors.transparent,
+        borderRadius: BorderRadius.circular(12.0),
         boxShadow: widget.backgroundColor == null
             ? [
-          /// bottom right
-          BoxShadow(
-            offset: const Offset(5, 5),
-            spreadRadius: 2.0,
-            blurRadius: 6.0,
-            color: Colors.grey.shade300,
-          ),
+                /// bottom right
+                BoxShadow(
+                  offset: const Offset(5, 5),
+                  spreadRadius: 2.0,
+                  blurRadius: 6.0,
+                  color: Colors.grey.shade300,
+                ),
 
-          /// top left
-          BoxShadow(
-            offset: const Offset(-5, -5),
-            spreadRadius: 5.0,
-            blurRadius: 2.0,
-            color: Colors.grey.shade200,
-          ),
-        ]
+                /// top left
+                BoxShadow(
+                  offset: const Offset(-5, -5),
+                  spreadRadius: 5.0,
+                  blurRadius: 2.0,
+                  color: Colors.grey.shade200,
+                ),
+              ]
             : [],
       ),
       child: Wrap(
@@ -78,7 +79,6 @@ class _SkywaRadioGroupState extends State<SkywaRadioGroup> {
               // color: Colors.redAccent,
               child: RadioListTile(
                 contentPadding: EdgeInsets.zero,
-                // value: i.toString(),
                 value: widget.texts[i],
                 visualDensity: VisualDensity.adaptivePlatformDensity,
                 activeColor: ColorThemes.primaryColor,

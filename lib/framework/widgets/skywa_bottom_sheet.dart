@@ -34,7 +34,9 @@ class SkywaBottomSheet {
               ),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(12.0),
+            ),
           ),
           child: content,
         );

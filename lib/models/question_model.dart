@@ -17,15 +17,21 @@ class QuestionModel {
     this.questionTypeAnswer,
   });
 
-  factory QuestionModel.fromJson(QueryDocumentSnapshot queryDocumentSnapshot) {
-    return QuestionModel(
+  QuestionModel.fromJson(QueryDocumentSnapshot queryDocumentSnapshot) {
+    questionId = queryDocumentSnapshot.get('questionId');
+    questionText = queryDocumentSnapshot.get('questionText');
+    isRequired = queryDocumentSnapshot.get('isRequired');
+    questionCreationDate = queryDocumentSnapshot.get('questionCreationDate');
+    questionType = queryDocumentSnapshot.get('questionType');
+    questionTypeAnswer = queryDocumentSnapshot.get('questionTypeAnswer');
+    /*return QuestionModel(
       questionId: queryDocumentSnapshot.get('questionId'),
       questionText: queryDocumentSnapshot.get('questionText'),
       isRequired: queryDocumentSnapshot.get('isRequired'),
       questionCreationDate: queryDocumentSnapshot.get('questionCreationDate'),
       questionType: queryDocumentSnapshot.get('questionType'),
       questionTypeAnswer: queryDocumentSnapshot.get('questionTypeAnswer'),
-    );
+    );*/
   }
 
   Map<String, dynamic> toMap() {
