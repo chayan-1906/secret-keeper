@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
 import 'package:diary_app/models/folder_model.dart';
+import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/models/question_model.dart';
-import 'package:diary_app/screens/view_all_notes.dart';
+import 'package:diary_app/screens/view_all_notes_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -86,6 +87,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
       folderName: _folderController.text,
       folderCreationDate: folderCreationDate,
       questions: <QuestionModel>[],
+      notes: <NoteModel>[],
     );
     await folderReference.doc(folderId).set(folderModel.toMap()).then((value) {
       print('Folder added: $folderModel');
@@ -103,7 +105,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
       setState(() {
         isLoading = false;
       });
-      // fetchAllQuestions();
+      refreshViewAllFolders();
     });
   }
 
@@ -205,6 +207,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
           folderCreationDate: queryDocumentSnapshot['folderCreationDate'],
           // questions: questions,
           questions: queryDocumentSnapshot['questions'],
+          notes: queryDocumentSnapshot['notes'],
         );
         setState(() {
           folders.add(folderModel);
@@ -358,65 +361,84 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                                   if (_selectedFoldersIndex.contains(index)) {
                                     _selectedFoldersIndex.remove(index);
                                   } else if (_selectedFoldersIndex.isEmpty) {
-                                    SkywaBottomSheet(
-                                      context: gridViewContext,
-                                      content: Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: ListView(
-                                          shrinkWrap: true,
-                                          children: [
-                                            /// view notes
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                                Navigator.push(
-                                                  context,
-                                                  PageTransition(
-                                                    child: ViewAllNotes(
-                                                        folderModel:
-                                                            folderModel),
-                                                    type: PageTransitionType
-                                                        .rippleRightUp,
-                                                  ),
-                                                );
-                                              },
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                child: SkywaText(
-                                                    text: 'View Notes'),
-                                              ),
-                                            ),
-
-                                            /// view questions
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                                Navigator.push(
-                                                  context,
-                                                  PageTransition(
-                                                    child:
-                                                        ViewAllQuestionsScreen(
-                                                      folderModel: folderModel,
-                                                      refreshViewAllFolders:
-                                                          refreshViewAllFolders,
-                                                    ),
-                                                    type: PageTransitionType
-                                                        .rippleRightUp,
-                                                  ),
-                                                );
-                                              },
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                child: SkywaText(
-                                                    text: 'View Questions'),
-                                              ),
-                                            ),
-                                          ],
+                                    if (folderModel.questions.isEmpty) {
+                                      Navigator.push(
+                                        context,
+                                        PageTransition(
+                                          child: ViewAllQuestionsScreen(
+                                            folderModel: folderModel,
+                                            refreshViewAllFolders:
+                                                refreshViewAllFolders,
+                                          ),
+                                          type:
+                                              PageTransitionType.rippleRightUp,
                                         ),
-                                      ),
-                                    );
+                                      );
+                                    } else {
+                                      SkywaBottomSheet(
+                                        context: gridViewContext,
+                                        content: Container(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: ListView(
+                                            shrinkWrap: true,
+                                            children: [
+                                              /// view notes
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  Navigator.push(
+                                                    context,
+                                                    PageTransition(
+                                                      child: ViewAllNotesScreen(
+                                                        folderModel:
+                                                            folderModel,
+                                                        refreshViewAllFolders:
+                                                            refreshViewAllFolders,
+                                                      ),
+                                                      type: PageTransitionType
+                                                          .rippleRightUp,
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                      10.0),
+                                                  child: SkywaText(
+                                                      text: 'View Notes'),
+                                                ),
+                                              ),
+
+                                              /// view questions
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  Navigator.push(
+                                                    context,
+                                                    PageTransition(
+                                                      child:
+                                                          ViewAllQuestionsScreen(
+                                                        folderModel:
+                                                            folderModel,
+                                                        refreshViewAllFolders:
+                                                            refreshViewAllFolders,
+                                                      ),
+                                                      type: PageTransitionType
+                                                          .rippleRightUp,
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                      10.0),
+                                                  child: SkywaText(
+                                                      text: 'View Questions'),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
                                   } else {
                                     _selectedFoldersIndex.add(index);
                                   }

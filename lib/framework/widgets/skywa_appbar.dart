@@ -24,6 +24,8 @@ class SkywaAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(backIconButton == null);
+    print(Navigator.canPop(context));
     if (backIconButton == null && Navigator.canPop(context)) {
       backIconButton = IconButton(
         icon: const Icon(Icons.arrow_back_ios_rounded),

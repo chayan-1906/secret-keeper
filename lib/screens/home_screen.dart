@@ -21,7 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
+      appBar: AppBar(),
+      /*appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: SkywaAppBar(
           appbarText: 'Secret Keeper',
@@ -34,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
+      ),*/
       body: Center(
         child: Column(
           children: [

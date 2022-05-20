@@ -11,6 +11,7 @@ class SkywaRadioGroup extends StatefulWidget {
   final String selectedValue;
   final WrapAlignment wrapAlignment;
   final Color backgroundColor;
+  final double spacing;
 
   const SkywaRadioGroup({
     Key key,
@@ -20,6 +21,7 @@ class SkywaRadioGroup extends StatefulWidget {
     this.wrapAlignment = WrapAlignment.spaceAround,
     @required this.onChanged,
     this.backgroundColor,
+    this.spacing = 8.0,
   })  : assert(texts != null && texts.length != 0),
         assert(onChanged != null),
         super(key: key);
@@ -71,6 +73,7 @@ class _SkywaRadioGroupState extends State<SkywaRadioGroup> {
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         alignment: widget.wrapAlignment,
+        spacing: widget.spacing,
         children: [
           for (int i = 0; i < widget.texts.length; i++)
             Container(

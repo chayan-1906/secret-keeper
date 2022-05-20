@@ -1,22 +1,23 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
-class SkywaText extends StatelessWidget {
+class SkywaAutoSizeText extends StatelessWidget {
   final String text;
   final TextStyle textStyle;
   final Color color;
-  final double fontSize;
+  // final double fontSize;
   final FontWeight fontWeight;
   final TextAlign textAlign;
   final TextOverflow textOverflow;
   final int maxLines;
   final double letterSpacing;
 
-  const SkywaText({
+  const SkywaAutoSizeText({
     Key key,
     @required this.text,
     this.textStyle,
     this.color = Colors.black,
-    this.fontSize = 18.0,
+    // this.fontSize = 18.0,
     this.fontWeight = FontWeight.w400,
     this.textAlign = TextAlign.start,
     this.textOverflow = TextOverflow.ellipsis,
@@ -27,14 +28,14 @@ class SkywaText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    return AutoSizeText(
       text,
       textAlign: textAlign,
       overflow: textOverflow,
       maxLines: maxLines,
       style: textStyle ??
           TextStyle(
-            fontSize: fontSize,
+            // fontSize: fontSize,
             color: color,
             letterSpacing: letterSpacing,
             fontWeight: fontWeight,

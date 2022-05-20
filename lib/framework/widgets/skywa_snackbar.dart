@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import '../../services/color_themes.dart';
 import '../../services/is_string_invalid.dart';
+import 'skywa_auto_size_text.dart';
 import 'skywa_text.dart';
 
 class SkywaSnackBar {
@@ -64,36 +66,38 @@ class SkywaSnackBar {
   void displaySkywaSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            /// icon
-            Icon(
-              icon,
-              color: Colors.white,
-              size: iconSize ?? IconTheme.of(context).size,
-            ),
-            const SizedBox(width: 10.0),
+        content: Container(
+          width: Device.screenWidth,
+          child: Row(
+            children: [
+              /// icon
+              Icon(
+                icon,
+                color: Colors.white,
+                size: iconSize ?? IconTheme.of(context).size,
+              ),
+              SizedBox(width: 10.0),
 
-            /// snackbar text
-            SkywaText(
-              text: snackbarText,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: fontSize ?? 18.0,
-            ),
-          ],
+              /// snackbar text
+              SkywaAutoSizeText(
+                text: snackbarText,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
+          ),
         ),
         elevation: 0.0,
         duration: Duration(seconds: durationInSeconds),
         action: actionText != null
             ? SnackBarAction(
-                textColor: Colors.white,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  action();
-                },
-                label: actionText,
-              )
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            action();
+          },
+          label: actionText,
+        )
             : null,
         backgroundColor: color,
       ),

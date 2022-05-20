@@ -18,9 +18,10 @@ class SkywaTextFormField extends StatefulWidget {
   final Widget suffixIcon;
   final bool enabled;
   final bool readOnly;
-  final Function onChanged;
+  final ValueChanged<String> onChanged;
   final bool isObscure;
   final int maxLines;
+  final bool showDecoration;
   ValueChanged<DateTime> onDateTimeChanged;
   DateTime initialDateTime;
   DateTime minimumDate;
@@ -38,6 +39,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -47,8 +49,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.text,
         textCapitalization = TextCapitalization.sentences,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimize for multiline textual information.
@@ -63,6 +65,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 5,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -72,8 +75,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.multiline,
         textCapitalization = TextCapitalization.sentences,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /* NOT REQUIRED */
@@ -106,6 +109,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -118,8 +122,8 @@ class SkywaTextFormField extends StatefulWidget {
         ),
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimize for telephone numbers.
@@ -132,6 +136,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -141,8 +146,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.phone,
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key)
   // assert(onChanged == null)
   ;
@@ -160,6 +165,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -175,8 +181,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.datetime,
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         assert(onDateTimeChanged != null),
         super(key: key);
 
@@ -190,6 +196,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -199,8 +206,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.emailAddress,
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimize for URLs.
@@ -213,6 +220,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -222,8 +230,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.url,
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimize for passwords that are visible to the user.
@@ -236,6 +244,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -245,8 +254,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.visiblePassword,
         textCapitalization = TextCapitalization.words,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimized for a person's name.
@@ -265,6 +274,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -274,8 +284,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.name,
         textCapitalization = TextCapitalization.words,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Optimized for postal mailing addresses.
@@ -291,6 +301,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -300,8 +311,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.streetAddress,
         textCapitalization = TextCapitalization.words,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   /// Prevent the OS from showing the on-screen virtual keyboard.
@@ -312,6 +323,7 @@ class SkywaTextFormField extends StatefulWidget {
     @required this.hintText,
     this.contentPadding,
     this.maxLines = 1,
+    this.showDecoration = true,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -321,8 +333,8 @@ class SkywaTextFormField extends StatefulWidget {
   })  : keyboardType = TextInputType.none,
         textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
-        assert(!isStringInvalid(text: labelText)),
-        assert(!isStringInvalid(text: hintText)),
+        assert(labelText != null && labelText != 'null'),
+        assert(hintText != null && hintText != 'null'),
         super(key: key);
 
   @override
@@ -351,7 +363,10 @@ class _SkywaTextFormFieldState extends State<SkywaTextFormField> {
           controller: widget.textEditingController,
           keyboardType: widget.keyboardType,
           textCapitalization: widget.textCapitalization,
-          style: const TextStyle(fontSize: 17.0, color: Colors.black),
+          style: TextStyle(
+            fontSize: 17.0,
+            color: widget.showDecoration ? Colors.black : Colors.white,
+          ),
           enabled: widget.enabled,
           readOnly: widget.readOnly,
           obscureText: isObscure,
@@ -361,22 +376,28 @@ class _SkywaTextFormFieldState extends State<SkywaTextFormField> {
           cursorColor: ColorThemes.cursorColor,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide:
-                  const BorderSide(color: ColorThemes.primaryColor, width: 2.0),
-            ),
+            border: widget.showDecoration
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  )
+                : InputBorder.none,
+            focusedBorder: widget.showDecoration
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(
+                        color: ColorThemes.primaryColor, width: 2.0),
+                  )
+                : InputBorder.none,
             contentPadding: widget.contentPadding,
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: const BorderSide(
-                color: ColorThemes.errorColor,
-                width: 2.0,
-              ),
-            ),
+            errorBorder: widget.showDecoration
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(
+                      color: ColorThemes.errorColor,
+                      width: 2.0,
+                    ),
+                  )
+                : InputBorder.none,
             label: SkywaText(
               text: widget.labelText,
               fontSize: 18.0,

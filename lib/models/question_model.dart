@@ -6,7 +6,7 @@ class QuestionModel {
   bool isRequired;
   String questionCreationDate;
   String questionType;
-  String questionTypeAnswer;
+  List<dynamic> questionTypeAnswer;
 
   QuestionModel({
     this.questionId,
