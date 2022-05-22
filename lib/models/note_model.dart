@@ -44,6 +44,6 @@ class NoteModel {
 
   @override
   String toString() {
-    return 'NoteModel{noteId: $noteId, noteAnswers: $noteAnswer, noteCreationDate: $noteCreationDate}';
+    return '$noteId $noteAnswer $noteCreationDate';
   }
 }

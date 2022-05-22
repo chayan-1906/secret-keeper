@@ -22,6 +22,7 @@ class SkywaTextFormField extends StatefulWidget {
   final bool isObscure;
   final int maxLines;
   final bool showDecoration;
+  final Function(String) validator;
   ValueChanged<DateTime> onDateTimeChanged;
   DateTime initialDateTime;
   DateTime minimumDate;
@@ -40,6 +41,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -66,6 +68,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 5,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -110,6 +113,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -137,6 +141,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -166,6 +171,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -197,6 +203,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -221,6 +228,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -245,6 +253,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -275,6 +284,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -302,6 +312,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -324,6 +335,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.contentPadding,
     this.maxLines = 1,
     this.showDecoration = true,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -427,6 +439,7 @@ class _SkywaTextFormFieldState extends State<SkywaTextFormField> {
               ],
             ),
           ),
+          validator: widget.validator,
           inputFormatters: <TextInputFormatter>[
             if (widget.keyboardType ==
                 const TextInputType.numberWithOptions(

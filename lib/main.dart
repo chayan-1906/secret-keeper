@@ -2,6 +2,7 @@ import 'package:diary_app/screens/auth_screens/signup_screen.dart';
 import 'package:diary_app/services/color_themes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 
 import 'screens/auth_screens/user_state.dart';
 import 'screens/splash_screen.dart';
@@ -38,6 +39,16 @@ class _MyAppState extends State<MyApp> {
                   cursorColor: ColorThemes.cursorColor),
               colorScheme: ColorScheme.fromSwatch()
                   .copyWith(secondary: ColorThemes.accentColor),
+              appBarTheme: AppBarTheme(
+                centerTitle: true,
+                elevation: 0.0,
+                backgroundColor: ColorThemes.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(Device.screenHeight * 0.02),
+                  ),
+                ),
+              ),
             ),
             home: const SplashScreen(),
             routes: {

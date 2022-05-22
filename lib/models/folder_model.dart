@@ -31,7 +31,8 @@ class FolderModel {
     notes = [];
     for (var note in queryDocumentSnapshot.get('notes')) {
       var noteFromJson = NoteModel.fromJson(note);
-      notes.add(noteFromJson.toMap());
+      // notes.add(noteFromJson.toMap());
+      notes.add(noteFromJson);
     }
   }
 
@@ -47,6 +48,6 @@ class FolderModel {
 
   @override
   String toString() {
-    return 'FolderModel{folderId: $folderId, folderName: $folderName, folderCreationDate: $folderCreationDate, questions: $questions, notes: $notes}';
+    return '$folderId $folderName $folderCreationDate $questions $notes}';
   }
 }

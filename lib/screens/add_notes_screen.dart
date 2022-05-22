@@ -34,6 +34,7 @@ class AddNotesScreen extends StatefulWidget {
 }
 
 class _AddNotesScreenState extends State<AddNotesScreen> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   FolderModel folderModel;
   List<dynamic> questions;
   List<String> questionIds;
@@ -49,11 +50,19 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     String questionType = questions[index]['questionType'];
     String questionText = questions[index]['questionText'];
     String questionId = questions[index]['questionId'];
+    bool isRequired = questions[index]['isRequired'];
     if (questionType == 'Text') {
       return SkywaTextFormField.text(
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -78,6 +87,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -102,6 +118,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -126,6 +149,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -150,6 +180,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -174,6 +211,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -199,6 +243,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         labelText: questionText,
         hintText: 'Enter $questionText...',
         maxLines: null,
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -245,6 +296,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
           hintText: 'Enter $questionText...',
           readOnly: true,
           enabled: false,
+          validator: isRequired
+              ? (value) {
+                  if (value.isEmpty) {
+                    return 'Mandatory field can\'t be empty';
+                  }
+                }
+              : null,
           onChanged: (String value) {
             setState(() {
               qIdTextEditingController[questionId];
@@ -258,6 +316,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         textEditingController: qIdTextEditingController[questionId],
         labelText: questionText,
         hintText: 'Enter $questionText...',
+        validator: isRequired
+            ? (value) {
+                if (value.isEmpty) {
+                  return 'Mandatory field can\'t be empty';
+                }
+              }
+            : null,
         onChanged: (String value) {
           setState(() {
             qIdTextEditingController[questionId];
@@ -278,6 +343,8 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             : null,
       );
     } else if (questionType == 'Chip') {
+      if (qIdTextEditingController[questionId].text.isEmpty)
+        qIdTextEditingController[questionId].text = '0';
       return Stack(
         children: [
           SkywaTextFormField.none(
@@ -285,9 +352,16 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             labelText: '',
             hintText: '',
             contentPadding: EdgeInsets.all(0.0),
-            enabled: false,
+            // enabled: false,
             readOnly: true,
             showDecoration: false,
+            validator: isRequired
+                ? (value) {
+                    if (value.isEmpty) {
+                      return 'Mandatory field can\'t be empty';
+                    }
+                  }
+                : null,
           ),
           Container(
             width: Device.screenWidth,
@@ -312,6 +386,8 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         ],
       );
     } else if (questionType == 'Switch') {
+      if (qIdTextEditingController[questionId].text.isEmpty)
+        qIdTextEditingController[questionId].text = 'false';
       return Stack(
         children: [
           SkywaTextFormField.none(
@@ -319,8 +395,15 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             labelText: '',
             hintText: '',
             contentPadding: EdgeInsets.all(0.0),
-            enabled: false,
+            // enabled: false,
             readOnly: true,
+            /*validator: isRequired
+                ? (value) {
+                    if (value.isEmpty) {
+                      return 'Mandatory field can\'t be empty';
+                    }
+                  }
+                : null,*/
             showDecoration: false,
           ),
           SkywaSwitch(
@@ -337,6 +420,9 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         ],
       );
     } else if (questionType == 'DropDown') {
+      if (qIdTextEditingController[questionId].text.isEmpty)
+        qIdTextEditingController[questionId].text =
+            questions[index]['questionTypeAnswer'][0];
       return SkywaDropdownButton(
         items: questions[index]['questionTypeAnswer'],
         onChanged: (value) {
@@ -367,9 +453,16 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             labelText: '',
             hintText: '',
             contentPadding: EdgeInsets.all(0.0),
-            enabled: false,
+            // enabled: false,
             readOnly: true,
             showDecoration: false,
+            /*validator: isRequired
+                ? (value) {
+                    if (value.isEmpty) {
+                      return 'Mandatory field can\'t be empty';
+                    }
+                  }
+                : null,*/
           ),
           SkywaSlider(
             value: value,
@@ -391,37 +484,40 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
   }
 
   Future<void> saveNote() async {
-    setState(() {
-      isLoading = true;
-    });
-    String noteId = GlobalMethods.generateUniqueId();
-    String noteCreationDate = DateTime.now().toString();
-    for (int i = 0; i < questionIds.length; i++) {
-      answers.addEntries(
-        [
-          MapEntry(
-            questionTexts[i],
-            qIdTextEditingController[questionIds[i]].text,
-          ),
-        ],
-      );
-    }
-    print(answers);
-    NoteModel noteToBeAdded = NoteModel(
-      noteId: noteId,
-      noteAnswer: answers,
-      noteCreationDate: noteCreationDate,
-    );
-    dbNotesList.add(noteToBeAdded.toMap());
-    folderReference.doc(folderModel.folderId).update({
-      'notes': dbNotesList,
-    }).then((value) {
+    if (_formKey.currentState.validate()) {
       setState(() {
-        isLoading = false;
+        isLoading = true;
       });
-      Navigator.pop(context);
-      widget.fetchAllNotes();
-    });
+      answers.clear();
+      String noteId = GlobalMethods.generateUniqueId();
+      String noteCreationDate = DateTime.now().toString();
+      for (int i = 0; i < questionIds.length; i++) {
+        answers.addEntries(
+          [
+            MapEntry(
+              questionTexts[i],
+              qIdTextEditingController[questionIds[i]].text,
+            ),
+          ],
+        );
+      }
+      print('answers: $answers');
+      NoteModel noteToBeAdded = NoteModel(
+        noteId: noteId,
+        noteAnswer: answers,
+        noteCreationDate: noteCreationDate,
+      );
+      dbNotesList.add(noteToBeAdded.toMap());
+      folderReference.doc(folderModel.folderId).update({
+        'notes': dbNotesList,
+      }).then((value) {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pop(context);
+        widget.fetchAllNotes();
+      });
+    }
   }
 
   @override
@@ -451,52 +547,51 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
         child: SkywaAppBar(
           appbarText: 'Add Notes',
           actions: [
-            // if (_questionController.text.isNotEmpty && _questionTypeController.text.isNotEmpty)
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  qIdTextEditingController;
-                });
-                // TODO: FOR CHOICE CHIP qIdTextEditingController[questionId].text IS ASSIGNED TO CORRESPONDING INDEX VALUE. IF REQUIRED, GET THE STRING VALUE FROM THE questions[index]['questionTypeAnswer'][SELECTED INDEX]
-                /*for (var question in questions) {
-                    print(
-                        qIdTextEditingController[question['questionId']].text);
-                  }*/
-                saveNote();
-              },
-              // icon: Icon(Icons.check_rounded),
-              icon: SkywaAutoSizeText(text: 'Save', color: Colors.white),
-            ),
+            if (qIdTextEditingController.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    qIdTextEditingController;
+                  });
+                  // TODO: FOR CHOICE CHIP qIdTextEditingController[questionId].text IS ASSIGNED TO CORRESPONDING INDEX VALUE. IF REQUIRED, GET THE STRING VALUE FROM THE questions[index]['questionTypeAnswer'][SELECTED INDEX]
+                  saveNote();
+                },
+                // icon: Icon(Icons.check_rounded),
+                icon: SkywaAutoSizeText(text: 'Save', color: Colors.white),
+              ),
           ],
         ),
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        padding: EdgeInsets.symmetric(
-          horizontal: Device.screenWidth * 0.04,
-          vertical: 20.0,
+      body: Form(
+        key: _formKey,
+        child: ListView.builder(
+          shrinkWrap: true,
+          padding: EdgeInsets.symmetric(
+            horizontal: Device.screenWidth * 0.04,
+            vertical: 20.0,
+          ),
+          itemCount: questions.length,
+          itemBuilder: (BuildContext buildContext, int index) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (questions[index]['questionType'] != 'Switch')
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SkywaText(
+                          text:
+                              '${questions[index]['questionText']} ${questions[index]['isRequired']}'),
+                      const SizedBox(height: 15.0),
+                    ],
+                  ),
+                buildNotesAnswerWidget(index: index),
+                const SizedBox(height: 20.0),
+              ],
+            );
+          },
         ),
-        itemCount: questions.length,
-        itemBuilder: (BuildContext buildContext, int index) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (questions[index]['questionType'] != 'Switch')
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SkywaText(
-                        text:
-                            '${questions[index]['questionText']} ${questions[index]['isRequired']}'),
-                    const SizedBox(height: 15.0),
-                  ],
-                ),
-              buildNotesAnswerWidget(index: index),
-              const SizedBox(height: 20.0),
-            ],
-          );
-        },
       ),
     );
   }
