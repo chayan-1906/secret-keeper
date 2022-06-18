@@ -1,4 +1,4 @@
-/*import 'package:diary_app/framework/widgets/skywa_button.dart';
+/*import 'package:diary_app/framework/widgets/skywa_elevated_button.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

@@ -9,4 +9,5 @@ class Assets {
   static const String imagesNotFound = 'assets/images/not_found.png';
   static const String imagesSplashScreen = 'assets/images/splash_screen.png';
   static const String imagesWarning = 'assets/images/warning.png';
+  static const String appIcon = 'assets/images/app_icon.png';
 }

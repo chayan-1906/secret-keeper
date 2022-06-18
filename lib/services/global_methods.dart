@@ -212,7 +212,7 @@ class GlobalMethods {
 
   static String getInitialLetter({@required String text}) {
     String initialLetter = '';
-    if (text.isNotEmpty) {
+    if (!isStringInvalid(text: text)) {
       initialLetter = text.substring(0, 1);
     }
     return initialLetter;

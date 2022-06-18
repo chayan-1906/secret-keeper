@@ -7,7 +7,12 @@ import '../framework/widgets/skywa_text.dart';
 import '../services/color_themes.dart';
 
 class GlassMorphicLoader extends StatefulWidget {
-  const GlassMorphicLoader({Key key}) : super(key: key);
+  final String text;
+
+  const GlassMorphicLoader({
+    Key key,
+    this.text = 'Please wait...',
+  }) : super(key: key);
 
   @override
   _GlassMorphicLoaderState createState() => _GlassMorphicLoaderState();
@@ -45,7 +50,7 @@ class _GlassMorphicLoaderState extends State<GlassMorphicLoader> {
                       color: ColorThemes.primaryDarkColor),
                   SizedBox(height: 10.0),
                   SkywaText(
-                    text: 'Please wait...',
+                    text: widget.text,
                     fontWeight: FontWeight.w500,
                     color: ColorThemes.primaryDarkColor,
                   ),

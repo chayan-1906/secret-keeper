@@ -10,6 +10,8 @@ class SkywaText extends StatelessWidget {
   final TextOverflow textOverflow;
   final int maxLines;
   final double letterSpacing;
+  final FontStyle fontStyle;
+  final TextDecoration textDecoration;
 
   const SkywaText({
     Key key,
@@ -22,6 +24,8 @@ class SkywaText extends StatelessWidget {
     this.textOverflow = TextOverflow.ellipsis,
     this.maxLines,
     this.letterSpacing = 0.0,
+    this.fontStyle,
+    this.textDecoration,
   })  : assert(text != null && text != 'null'),
         super(key: key);
 
@@ -38,6 +42,8 @@ class SkywaText extends StatelessWidget {
             color: color,
             letterSpacing: letterSpacing,
             fontWeight: fontWeight,
+            fontStyle: fontStyle,
+            decoration: textDecoration,
           ),
     );
   }

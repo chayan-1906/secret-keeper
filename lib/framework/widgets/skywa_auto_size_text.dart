@@ -5,7 +5,7 @@ class SkywaAutoSizeText extends StatelessWidget {
   final String text;
   final TextStyle textStyle;
   final Color color;
-  // final double fontSize;
+  final double fontSize;
   final FontWeight fontWeight;
   final TextAlign textAlign;
   final TextOverflow textOverflow;
@@ -17,7 +17,7 @@ class SkywaAutoSizeText extends StatelessWidget {
     @required this.text,
     this.textStyle,
     this.color = Colors.black,
-    // this.fontSize = 18.0,
+    this.fontSize = 13.0,
     this.fontWeight = FontWeight.w400,
     this.textAlign = TextAlign.start,
     this.textOverflow = TextOverflow.ellipsis,
@@ -35,7 +35,7 @@ class SkywaAutoSizeText extends StatelessWidget {
       maxLines: maxLines,
       style: textStyle ??
           TextStyle(
-            // fontSize: fontSize,
+            fontSize: fontSize,
             color: color,
             letterSpacing: letterSpacing,
             fontWeight: fontWeight,

@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
 
 import '../framework/widgets/skywa_bottom_sheet.dart';
-import '../framework/widgets/skywa_button.dart';
+import '../framework/widgets/skywa_elevated_button.dart';
 import '../framework/widgets/skywa_radio_group.dart';
 import '../framework/widgets/skywa_text.dart';
 import '../framework/widgets/skywa_textformfield.dart';
@@ -357,13 +357,13 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SkywaButton.info(
+                SkywaElevatedButton.info(
                     text: 'No',
                     onTap: () {
                       Navigator.pop(context);
                     }),
                 SizedBox(width: 10.0),
-                SkywaButton.info(
+                SkywaElevatedButton.info(
                     text: 'Yes',
                     onTap: () {
                       Navigator.pop(context);

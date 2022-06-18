@@ -1,13 +1,20 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
 import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/services/color_themes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 
+import '../../framework/widgets/skywa_elevated_button.dart';
+import '../../framework/widgets/skywa_rich_text.dart';
+import '../../framework/widgets/skywa_text.dart';
+import '../../generated/assets.dart';
 import '../../models/user_model.dart';
 import '../../services/global_methods.dart';
+import '../../widgets/glassmorphic_loader.dart';
 import '../../widgets/loading_widget.dart';
 import 'login_screen.dart';
 
@@ -56,17 +63,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         var createdDate = user.metadata.creationTime.toString();
         user.updateDisplayName(_nameController.text);
         user.reload();
+        UserModel userModel = UserModel(
+          authenticatedBy: 'email',
+          createdAt: createdDate,
+          email: _emailController.text,
+          joinedAt: formattedDate,
+          id: _uid,
+          name: _nameController.text,
+        );
         await FirebaseFirestore.instance
             .collection('users')
             .doc(_uid)
-            .set(UserModel(
-              authenticatedBy: 'email',
-              createdAt: createdDate,
-              email: _emailController.text,
-              joinedAt: formattedDate,
-              id: _uid,
-              name: _nameController.text,
-            ).toMap());
+            .set(userModel.toMap());
         Navigator.canPop(context) ? Navigator.pop(context) : null;
       } catch (error) {
         GlobalMethods.authErrorDialog(
@@ -90,25 +98,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
         children: [
           CustomScrollView(
             controller: _scrollController,
+            physics: BouncingScrollPhysics(),
             slivers: [
               /// sliver appbar
               SliverAppBar(
-                expandedHeight: MediaQuery.of(context).size.height * 0.35,
+                expandedHeight: Device.screenHeight * 0.45,
                 collapsedHeight: kToolbarHeight,
                 centerTitle: true,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
                 floating: true,
                 pinned: true,
+                automaticallyImplyLeading: false,
                 flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                     top = constraints.biggest.height;
                     return Container(
-                      // color: Color(0xFFDB6B97),
                       color: ColorThemes.primaryColor,
                       child: FlexibleSpaceBar(
                         collapseMode: CollapseMode.parallax,
@@ -120,22 +123,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             AnimatedOpacity(
                               opacity: top <= 110.0 ? 1.0 : 0.0,
                               duration: const Duration(milliseconds: 300),
-                              child: const AutoSizeText(
-                                'Sign Up',
+                              child: SkywaAutoSizeText(
+                                text: 'Sign Up',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
-                                style: TextStyle(
-                                  color: Color(0xFFEEF2FF),
-                                  fontSize: 25.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                color: Color(0xFFEEF2FF),
+                                fontSize: 25.0,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        background: const Center(
+                        /*background: const Center(
                           child: AutoSizeText(
-                            'Sign Up',
+                            'Sign In',
                             maxLines: 1,
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -143,6 +144,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               color: Color(0xFFEEF2FF),
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ),*/
+                        background: Container(
+                          padding: EdgeInsets.only(
+                            left: 30.0,
+                            right: 30.0,
+                            top: 35.0,
+                            bottom: 10.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// secret keeper
+                              SkywaText(
+                                text: 'Secret Keeper',
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              SizedBox(height: 5.0),
+
+                              /// your personal notekeeper
+                              SkywaText(
+                                text: 'Your personal notekeeper',
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.w300,
+                              ),
+
+                              /// app icon
+                              Flexible(
+                                child: Center(
+                                  child: Image.asset(Assets.appIcon),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -185,6 +220,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 )
                               : null,
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return 'Please enter your name';
+                            }
+                          },
                         ),
                       ),
 
@@ -213,6 +253,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 )
                               : null,
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                          },
                         ),
                       ),
 
@@ -241,73 +286,71 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 )
                               : null,
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                          },
                         ),
                       ),
 
-                      /// don't have an account? sign up
+                      /// forgot password & sign in
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          /// already have an account
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 14.0),
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  PageTransition(
-                                    child: const LoginScreen(),
-                                    type: PageTransitionType.rippleRightUp,
-                                  ),
-                                );
-                              },
-                              child: RichText(
-                                text: TextSpan(
-                                  style: DefaultTextStyle.of(context).style,
-                                  children: const [
-                                    TextSpan(
-                                      text: 'Already have an account?',
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                        color: Color(0xFFF96E46),
-                                        fontWeight: FontWeight.w500,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: '\nSign In',
-                                      style: TextStyle(
-                                        fontSize: 17.0,
-                                        color: Color(0xFFF96E46),
-                                        fontWeight: FontWeight.w700,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          /// sign up
+                          /// sign in
                           Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: FloatingActionButton(
-                              elevation: 10.0,
-                              onPressed: _submitForm,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(30.0))),
-                              child: const Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
+                            child: SkywaElevatedButton.save(
+                              onTap: _submitForm,
+                              text: 'Sign Up',
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
                               ),
-                              backgroundColor: ColorThemes.primaryColor,
                             ),
                           ),
                         ],
                       ),
+
+                      /// existing user? sign in
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          /// new user?
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 14.0),
+                            child: SkywaRichText(
+                              texts: ['Existing User? ', 'Sign In'],
+                              textStyles: [
+                                TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.black,
+                                ),
+                                TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ],
+                              onTaps: [
+                                () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rippleRightUp,
+                                      child: const LoginScreen(),
+                                    ),
+                                  );
+                                }
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20.0),
                     ],
                   ),
                 ),
@@ -316,16 +359,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
 
           /// while signing in loading
-          Positioned(
-            top: 0.0,
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            child: Visibility(
-              visible: _isLoading,
-              child: const LoadingWidget(),
+          if (_isLoading)
+            Positioned(
+              top: 0.0,
+              bottom: 0.0,
+              left: 0.0,
+              right: 0.0,
+              child: GlassMorphicLoader(text: 'Signing Up...'),
             ),
-          ),
         ],
       ),
     );

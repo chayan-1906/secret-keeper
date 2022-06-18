@@ -28,7 +28,7 @@ import 'package:path/path.dart';
 import '../framework/widgets/skywa_alert_dialog.dart';
 import '../framework/widgets/skywa_appbar.dart';
 import '../framework/widgets/skywa_auto_size_text.dart';
-import '../framework/widgets/skywa_button.dart';
+import '../framework/widgets/skywa_elevated_button.dart';
 import '../models/folder_model.dart';
 import '../services/color_themes.dart';
 import '../services/global_methods.dart';
@@ -543,7 +543,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                 : null,
           ),
           if (isStringInvalid(text: qIdTextEditingController[questionId].text))
-            SkywaButton.save(
+            SkywaElevatedButton.save(
               text: 'Pick Image',
               onTap: () {
                 /// show modal bottom sheet for image picker
@@ -610,7 +610,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                   ),
                 ),
                 SizedBox(height: 10.0),
-                SkywaButton.save(
+                SkywaElevatedButton.save(
                   text: 'Pick Image',
                   onTap: () {
                     /// show modal bottom sheet for image picker
@@ -683,7 +683,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                 : null,
           ),
           if (isStringInvalid(text: qIdTextEditingController[questionId].text))
-            SkywaButton.save(
+            SkywaElevatedButton.save(
               text: 'Pick File',
               onTap: () {
                 pickFile(pickedFile: pickedFile, questionId: questionId);
@@ -721,7 +721,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                   ),
                 ),
                 SizedBox(height: 10.0),
-                SkywaButton.save(
+                SkywaElevatedButton.save(
                   text: 'Pick File',
                   onTap: () {
                     pickFile(pickedFile: pickedFile, questionId: questionId);
@@ -905,13 +905,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SkywaButton.info(
+                SkywaElevatedButton.info(
                     text: 'No',
                     onTap: () {
                       Navigator.pop(context);
                     }),
                 SizedBox(width: 10.0),
-                SkywaButton.info(
+                SkywaElevatedButton.info(
                     text: 'Yes',
                     onTap: () {
                       Navigator.pop(context);

@@ -3,7 +3,9 @@ import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/models/question_model.dart';
+import 'package:diary_app/screens/auth_screens/login_screen.dart';
 import 'package:diary_app/screens/notes_questions_tabbar_screen.dart';
+import 'package:diary_app/services/is_string_invalid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,7 +17,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../framework/widgets/skywa_alert_dialog.dart';
 import '../framework/widgets/skywa_appbar.dart';
-import '../framework/widgets/skywa_button.dart';
+import '../framework/widgets/skywa_elevated_button.dart';
 import '../framework/widgets/skywa_floating_action_button.dart';
 import '../framework/widgets/skywa_text.dart';
 import '../framework/widgets/skywa_textformfield.dart';
@@ -55,6 +57,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
   FolderModel selectedFolderModel;
   final List<int> _selectedFoldersIndex = [];
   bool isSearching = false;
+  String userName = '';
 
   Widget folderShimmer() {
     return GridView.builder(
@@ -181,7 +184,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                       ),
                       const SizedBox(height: 10.0),
                       if (_folderController.text.isNotEmpty)
-                        SkywaButton.save(
+                        SkywaElevatedButton.save(
                             text: 'Save',
                             onTap: () {
                               Navigator.pop(context);
@@ -233,7 +236,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
 
             /// display name
             SkywaText(
-              text: firebaseUser.displayName,
+              text: userName,
               fontSize: 30.0,
               fontWeight: FontWeight.w700,
             ),
@@ -243,8 +246,8 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
             SkywaAutoSizeText(
               text: firebaseUser.email,
               textAlign: TextAlign.end,
-              textStyle: TextStyle(fontSize: 20.0),
               fontWeight: FontWeight.w500,
+              textStyle: TextStyle(fontSize: 20.0),
             ),
             SizedBox(height: 5.0),
 
@@ -478,6 +481,75 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
     );
   }
 
+  void showLogoutAlertDialog({@required BuildContext context}) {
+    SkywaAlertDialog.error(
+      context: context,
+      titleText: 'Warning',
+      icon: Icon(
+        Icons.warning_amber_rounded,
+        color: ColorThemes.errorColor,
+        size: 40.0,
+      ),
+      titlePadding: EdgeInsets.only(
+        top: Device.screenHeight * 0.025,
+        bottom: Device.screenHeight * 0.025,
+        left: Device.screenWidth * 0.05,
+        right: Device.screenWidth * 0.05,
+      ),
+      fontSize: 22.0,
+      content: Container(
+        width: Device.screenWidth,
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          // shrinkWrap: true,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SkywaText(text: 'Do you want to logout?'),
+            SizedBox(height: 25.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SkywaElevatedButton.info(
+                    text: 'No',
+                    onTap: () {
+                      Navigator.pop(context);
+                    }),
+                SizedBox(width: 10.0),
+                SkywaElevatedButton.info(
+                    text: 'Yes',
+                    onTap: () {
+                      _firebaseAuth.signOut();
+                      Navigator.pushReplacement(
+                        context,
+                        PageTransition(
+                          child: LoginScreen(),
+                          type: PageTransitionType.rippleRightUp,
+                        ),
+                      );
+                    }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> getDisplayName() async {
+    if (!isStringInvalid(text: firebaseUser.displayName)) {
+      userName = firebaseUser.displayName;
+    } else {
+      await firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser.uid)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) {
+        userName = documentSnapshot.get('name');
+      });
+    }
+    initialLetter = GlobalMethods.getInitialLetter(text: userName);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -490,8 +562,9 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
         .doc(_firebaseAuth.currentUser.uid)
         .collection('folders');
     firebaseUser = widget.firebaseUser;
-    initialLetter =
-        GlobalMethods.getInitialLetter(text: firebaseUser.displayName);
+    print('firebaseUser: $firebaseUser');
+    print('_firebaseAuth.currentUse: ${_firebaseAuth.currentUser}');
+    getDisplayName();
     fetchAllFolders();
   }
 
@@ -569,8 +642,8 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
         IconButton(
           padding: EdgeInsets.all(0.0),
           onPressed: () {
-            _firebaseAuth.signOut();
-            Navigator.pop(context);
+            showLogoutAlertDialog(context: context);
+            ;
           },
           icon: Icon(Icons.logout_rounded, color: Colors.black),
         ),
@@ -615,14 +688,14 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        SkywaButton.save(
+                        SkywaElevatedButton.save(
                           text: 'Cancel',
                           onTap: () {
                             Navigator.pop(context);
                           },
                         ),
                         const SizedBox(width: 20.0),
-                        SkywaButton.delete(
+                        SkywaElevatedButton.delete(
                           text: 'Delete',
                           onTap: () {
                             Navigator.pop(context);

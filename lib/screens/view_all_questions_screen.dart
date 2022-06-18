@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/framework/widgets/skywa_alert_dialog.dart';
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
 import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
-import 'package:diary_app/framework/widgets/skywa_button.dart';
+import 'package:diary_app/framework/widgets/skywa_elevated_button.dart';
 import 'package:diary_app/framework/widgets/skywa_floating_action_button.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
 import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
@@ -165,14 +165,14 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,
                                             children: [
-                                              SkywaButton.save(
+                                              SkywaElevatedButton.save(
                                                 text: 'Cancel',
                                                 onTap: () {
                                                   Navigator.pop(context);
                                                 },
                                               ),
                                               const SizedBox(width: 20.0),
-                                              SkywaButton.delete(
+                                              SkywaElevatedButton.delete(
                                                 text: 'Delete',
                                                 onTap: () {
                                                   Navigator.pop(context);

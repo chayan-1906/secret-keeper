@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 
-import '../framework/widgets/skywa_button.dart';
+import '../framework/widgets/skywa_elevated_button.dart';
 import 'auth_screens/login_screen.dart';
 import 'auth_screens/signup_screen.dart';
 
@@ -19,7 +19,7 @@ class _LandingScreenState extends State<LandingScreen> {
       appBar: AppBar(title: Text('Landing'), elevation: 50.0),
       body: Column(
         children: [
-          SkywaButton.save(
+          SkywaElevatedButton.save(
             text: 'Sign In',
             onTap: () {
               Navigator.push(
@@ -33,7 +33,7 @@ class _LandingScreenState extends State<LandingScreen> {
             iconData: Icons.verified_user_rounded,
           ),
           const SizedBox(height: 10.0),
-          SkywaButton.save(
+          SkywaElevatedButton.save(
             text: 'Sign Up',
             onTap: () {
               Navigator.push(

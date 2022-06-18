@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/color_themes.dart';
 import 'skywa_text.dart';
 
-class SkywaButton extends StatelessWidget {
+class SkywaElevatedButton extends StatelessWidget {
   final IconData iconData;
   final double iconSize;
   final String text;
@@ -13,7 +13,7 @@ class SkywaButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
 
-  SkywaButton.info({
+  SkywaElevatedButton.info({
     Key key,
     this.iconData,
     this.iconSize,
@@ -27,7 +27,7 @@ class SkywaButton extends StatelessWidget {
         assert(onTap != null),
         super(key: key);
 
-  SkywaButton.save({
+  SkywaElevatedButton.save({
     Key key,
     this.iconData,
     this.iconSize,
@@ -41,7 +41,7 @@ class SkywaButton extends StatelessWidget {
         assert(onTap != null),
         super(key: key);
 
-  SkywaButton.delete({
+  SkywaElevatedButton.delete({
     Key key,
     this.iconData,
     this.iconSize,

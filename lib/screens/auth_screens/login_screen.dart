@@ -1,5 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:diary_app/framework/widgets/skywa_elevated_button.dart';
+import 'package:diary_app/framework/widgets/skywa_rich_text.dart';
+import 'package:diary_app/framework/widgets/skywa_text.dart';
+import 'package:diary_app/framework/widgets/skywa_text_button.dart';
+import 'package:diary_app/generated/assets.dart';
+import 'package:diary_app/widgets/glassmorphic_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
@@ -70,25 +77,20 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           CustomScrollView(
             controller: _scrollController,
+            physics: BouncingScrollPhysics(),
             slivers: [
               /// sliver appbar
               SliverAppBar(
-                expandedHeight: Device.screenHeight * 0.35,
+                expandedHeight: Device.screenHeight * 0.45,
                 collapsedHeight: kToolbarHeight,
                 centerTitle: true,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
                 floating: true,
                 pinned: true,
+                automaticallyImplyLeading: false,
                 flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                     top = constraints.biggest.height;
                     return Container(
-                      // color: Color(0xFFDB6B97),
                       color: ColorThemes.primaryColor,
                       child: FlexibleSpaceBar(
                         collapseMode: CollapseMode.parallax,
@@ -113,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        background: const Center(
+                        /*background: const Center(
                           child: AutoSizeText(
                             'Sign In',
                             maxLines: 1,
@@ -123,6 +125,40 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Color(0xFFEEF2FF),
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ),*/
+                        background: Container(
+                          padding: EdgeInsets.only(
+                            left: 30.0,
+                            right: 30.0,
+                            top: 35.0,
+                            bottom: 10.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// secret keeper
+                              SkywaText(
+                                text: 'Secret Keeper',
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              SizedBox(height: 5.0),
+
+                              /// your personal notekeeper
+                              SkywaText(
+                                text: 'Your personal notekeeper',
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.w300,
+                              ),
+
+                              /// app icon
+                              Flexible(
+                                child: Center(
+                                  child: Image.asset(Assets.appIcon),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -165,6 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                               : null,
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                          },
                         ),
                       ),
 
@@ -193,10 +234,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                               : null,
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return 'Please enter password';
+                            }
+                          },
                         ),
                       ),
 
-                      /// forget password & sign in
+                      /// forgot password & sign in
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -214,16 +260,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-                              child: const Text(
-                                'Forgot Password?',
-                                style: TextStyle(
-                                  fontSize: 15.0,
-                                  letterSpacing: 0.8,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FontStyle.italic,
-                                  decoration: TextDecoration.underline,
-                                  color: Color(0xFF141E61),
-                                ),
+                              child: const SkywaText(
+                                text: 'Forgot Password',
+                                color: Color(0xFF141E61),
+                                letterSpacing: 0.8,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FontStyle.italic,
+                                textDecoration: TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -231,70 +275,56 @@ class _LoginScreenState extends State<LoginScreen> {
                           /// sign in
                           Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: FloatingActionButton(
-                              elevation: 10.0,
-                              onPressed: _submitForm,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(30.0)),
+                            child: SkywaElevatedButton.save(
+                              onTap: _submitForm,
+                              text: 'Sign In',
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
                               ),
-                              child: const Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                              ),
-                              backgroundColor: ColorThemes.primaryColor,
                             ),
                           ),
                         ],
                       ),
 
-                      /// don't have an account? sign up
+                      /// new user? sign up
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          /// don't have an account
-                          Padding(
+                          /// new user?
+                          Container(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 14.0),
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  PageTransition(
-                                    type: PageTransitionType.rippleRightUp,
-                                    child: const SignUpScreen(),
-                                  ),
-                                );
-                              },
-                              child: RichText(
-                                text: TextSpan(
-                                  style: DefaultTextStyle.of(context).style,
-                                  children: const [
-                                    TextSpan(
-                                      text: 'Don\'t have an account?',
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                        color: ColorThemes.primaryColor,
-                                        fontWeight: FontWeight.w500,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: '\tSign Up',
-                                      style: TextStyle(
-                                        fontSize: 17.0,
-                                        color: ColorThemes.primaryColor,
-                                        fontWeight: FontWeight.w700,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                  ],
+                            child: SkywaRichText(
+                              texts: ['New User? ', 'Sign Up'],
+                              textStyles: [
+                                TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.black,
                                 ),
-                              ),
+                                TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ],
+                              onTaps: [
+                                () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rippleRightUp,
+                                      child: const SignUpScreen(),
+                                    ),
+                                  );
+                                }
+                              ],
                             ),
                           ),
                         ],
                       ),
+                      SizedBox(height: 20.0),
                     ],
                   ),
                 ),
@@ -303,16 +333,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
 
           /// while signing in loading
-          Positioned(
-            top: 0.0,
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            child: Visibility(
-              visible: _isLoading,
-              child: LoadingWidget(),
+          if (_isLoading)
+            Positioned(
+              top: 0.0,
+              bottom: 0.0,
+              left: 0.0,
+              right: 0.0,
+              child: GlassMorphicLoader(text: 'Signing In...'),
             ),
-          ),
         ],
       ),
     );

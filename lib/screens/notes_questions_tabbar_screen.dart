@@ -16,7 +16,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../framework/widgets/skywa_alert_dialog.dart';
 import '../framework/widgets/skywa_appbar.dart';
-import '../framework/widgets/skywa_button.dart';
+import '../framework/widgets/skywa_elevated_button.dart';
 import '../framework/widgets/skywa_floating_action_button.dart';
 import '../models/note_model.dart';
 import '../models/question_model.dart';
@@ -244,14 +244,14 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  SkywaButton.save(
+                                  SkywaElevatedButton.save(
                                     text: 'Cancel',
                                     onTap: () {
                                       Navigator.pop(context);
                                     },
                                   ),
                                   const SizedBox(width: 20.0),
-                                  SkywaButton.delete(
+                                  SkywaElevatedButton.delete(
                                     text: 'Delete',
                                     onTap: () {
                                       Navigator.pop(context);
@@ -416,14 +416,14 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      SkywaButton.save(
+                                      SkywaElevatedButton.save(
                                         text: 'Cancel',
                                         onTap: () {
                                           Navigator.pop(context);
                                         },
                                       ),
                                       const SizedBox(width: 20.0),
-                                      SkywaButton.delete(
+                                      SkywaElevatedButton.delete(
                                         text: 'Delete',
                                         onTap: () {
                                           Navigator.pop(context);
