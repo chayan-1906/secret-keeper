@@ -1,13 +1,9 @@
 import 'dart:async';
 
 import 'package:diary_app/framework/widgets/skywa_text.dart';
-import 'package:diary_app/services/read_device_id.dart';
-import 'package:diary_app/services/user_settings_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
-import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../generated/assets.dart';
 import 'auth_screens/user_state.dart';

@@ -238,6 +238,10 @@ class GlobalMethods {
     String fileName = getFilenameFromUrl(url: url);
     final directory = await getExternalStorageDirectory();
     File saveFileName = File('${directory.path}/${fileName}');
+    if (saveFileName.existsSync()) {
+      await OpenFile.open(saveFileName.path);
+      return;
+    }
     await Dio().download(
       url,
       saveFileName.path,

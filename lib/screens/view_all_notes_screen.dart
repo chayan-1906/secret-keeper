@@ -1,9 +1,7 @@
 import 'package:diary_app/framework/widgets/skywa_floating_action_button.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
-import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/note_model.dart';
-import 'package:diary_app/services/color_themes.dart';
 import 'package:diary_app/services/search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

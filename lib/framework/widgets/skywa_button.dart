@@ -27,7 +27,8 @@ class SkywaButton extends StatelessWidget {
         assert(onTap != null),
         super(key: key);
 
-  SkywaButton.save({Key key,
+  SkywaButton.save({
+    Key key,
     this.iconData,
     this.iconSize,
     @required this.text,
@@ -37,7 +38,8 @@ class SkywaButton extends StatelessWidget {
     this.margin,
   })  : buttonColor = ColorThemes.primaryColor,
         assert(text != null),
-        assert(onTap != null), super(key: key);
+        assert(onTap != null),
+        super(key: key);
 
   SkywaButton.delete({
     Key key,

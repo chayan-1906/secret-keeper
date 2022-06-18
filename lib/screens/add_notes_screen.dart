@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
+import 'package:diary_app/framework/widgets/skywa_cached_network_image.dart';
 import 'package:diary_app/framework/widgets/skywa_choice_chip_group.dart';
 import 'package:diary_app/framework/widgets/skywa_date_time_picker.dart';
 import 'package:diary_app/framework/widgets/skywa_dropdown_button.dart';
@@ -20,7 +21,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
@@ -32,6 +32,7 @@ import '../framework/widgets/skywa_button.dart';
 import '../models/folder_model.dart';
 import '../services/color_themes.dart';
 import '../services/global_methods.dart';
+import '../widgets/glassmorphic_loader.dart';
 
 class AddNotesScreen extends StatefulWidget {
   final FolderModel folderModel;
@@ -602,9 +603,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                       ),
                     );
                   },
-                  child:
-                      Image.network(qIdTextEditingController[questionId].text),
+                  child: SkywaCachedNetworkImage.clipRRect(
+                    imageUrl: qIdTextEditingController[questionId].text,
+                    height: 250.0,
+                    fit: BoxFit.contain,
+                  ),
                 ),
+                SizedBox(height: 10.0),
                 SkywaButton.save(
                   text: 'Pick Image',
                   onTap: () {
@@ -715,6 +720,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                     maxLines: 3,
                   ),
                 ),
+                SizedBox(height: 10.0),
                 SkywaButton.save(
                   text: 'Pick File',
                   onTap: () {
@@ -1144,47 +1150,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                 },
               ),
             ),
-            if (isLoading)
-              Stack(
-                children: [
-                  Container(
-                    height: Device.screenHeight,
-                    width: Device.screenWidth,
-                    decoration: BoxDecoration(color: Colors.transparent),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-                      child: Container(
-                        height: 100.0,
-                        width: Device.screenWidth * 0.70,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(25.0),
-                          border: Border.all(
-                            width: 2.0,
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                                color: ColorThemes.primaryDarkColor),
-                            SizedBox(height: 10.0),
-                            SkywaText(
-                              text: 'Please wait...',
-                              fontWeight: FontWeight.w500,
-                              color: ColorThemes.primaryDarkColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            if (isLoading) GlassMorphicLoader(),
           ],
         ),
       ),

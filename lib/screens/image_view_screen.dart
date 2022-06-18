@@ -1,7 +1,10 @@
-import 'package:diary_app/framework/widgets/skywa_appbar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+
+import '../generated/assets.dart';
 
 class ImageViewScreen extends StatefulWidget {
   // final String name;
@@ -29,23 +32,46 @@ class _PhotoViewScreenState extends State<ImageViewScreen> {
         builder: (BuildContext context, int index) {
           return PhotoViewGalleryPageOptions(
             minScale: PhotoViewComputedScale.contained,
-            imageProvider: NetworkImage(widget.imageUrl),
+            imageProvider: CachedNetworkImageProvider(widget.imageUrl),
             initialScale: PhotoViewComputedScale.contained,
             filterQuality: FilterQuality.high,
           );
         },
         itemCount: 1,
         loadingBuilder: (context, event) => Center(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+          /*child: Container(
+            // width: MediaQuery.of(context).size.width,
+            // height: MediaQuery.of(context).size.height,
             child: CircularProgressIndicator(
               color: Theme.of(context).primaryColor,
-              strokeWidth: 8.0,
+              strokeWidth: 2.0,
               value: event == null
                   ? 0
                   : event.cumulativeBytesLoaded / event.expectedTotalBytes,
             ),
+          ),*/
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.0),
+                child: Image.asset(
+                  Assets.imagesImagePlaceholder,
+                  height: Device.screenHeight / 2,
+                  width: Device.screenWidth / 2,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Container(
+                height: Device.screenHeight / 2,
+                width: Device.screenWidth / 2,
+                child: LinearProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation(Colors.grey.withOpacity(0.5)),
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
+            ],
           ),
         ),
         backgroundDecoration: BoxDecoration(color: Colors.transparent),

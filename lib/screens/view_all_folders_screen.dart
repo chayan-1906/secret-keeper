@@ -1,12 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
-import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/models/question_model.dart';
-import 'package:diary_app/screens/landing_screen.dart';
 import 'package:diary_app/screens/notes_questions_tabbar_screen.dart';
-import 'package:diary_app/screens/view_all_notes_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';

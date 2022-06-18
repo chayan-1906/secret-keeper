@@ -5,7 +5,6 @@ import 'package:flutter_icons/flutter_icons.dart';
 import '../../services/color_themes.dart';
 import '../../services/is_string_invalid.dart';
 import 'skywa_auto_size_text.dart';
-import 'skywa_text.dart';
 
 class SkywaSnackBar {
   final BuildContext context;
@@ -91,13 +90,13 @@ class SkywaSnackBar {
         duration: Duration(seconds: durationInSeconds),
         action: actionText != null
             ? SnackBarAction(
-          textColor: Colors.white,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            action();
-          },
-          label: actionText,
-        )
+                textColor: Colors.white,
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  action();
+                },
+                label: actionText,
+              )
             : null,
         backgroundColor: color,
       ),

@@ -4,7 +4,6 @@ import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/services/color_themes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 
 import '../../models/user_model.dart';

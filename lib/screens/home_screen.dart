@@ -1,13 +1,8 @@
-import 'package:diary_app/framework/widgets/skywa_appbar.dart';
-import 'package:diary_app/framework/widgets/skywa_button.dart';
-import 'package:diary_app/models/user_model.dart';
+/*import 'package:diary_app/framework/widgets/skywa_button.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
-import 'package:diary_app/screens/view_all_questions_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-
-import 'add_question_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final User firebaseUser;
@@ -49,7 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   PageTransition(
-                    child: ViewAllFolderScreen(firebaseUser: widget.firebaseUser),
+                    child:
+                        ViewAllFolderScreen(firebaseUser: widget.firebaseUser),
                     type: PageTransitionType.rippleRightUp,
                   ),
                 );
@@ -61,3 +57,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+*/

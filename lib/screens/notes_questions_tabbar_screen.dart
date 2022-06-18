@@ -184,6 +184,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
         ? questionShimmer()
         : ListView.builder(
             shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
             itemCount: isNoteSearching
                 ? searchedNotes.length
                 : folderModel.notes.length,
@@ -211,7 +212,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                 key: ValueKey(0),
                 direction: Axis.horizontal,
                 closeOnScroll: true,
-                actionPane: const SlidableStrechActionPane(),
+                actionPane: const SlidableBehindActionPane(),
                 actionExtentRatio: 0.20,
                 secondaryActions: [
                   /// delete question
@@ -279,9 +280,13 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                         child: NoteRowWidget(
                           folderModel: folderModel,
                           noteModel: noteModel,
+                          expanded: false,
                         ),
                       )
-                    : Container(
+                    :
+
+                    /// empty note
+                    Container(
                         margin: EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -355,6 +360,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
               )
             : ListView.builder(
                 shrinkWrap: true,
+                physics: BouncingScrollPhysics(),
                 itemCount: isQuestionSearching
                     ? searchedQuestions.length
                     : folderModel.questions.length,
@@ -587,16 +593,17 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                 },
               ),
             ),
-            Container(
-              height: Device.screenHeight -
-                  (kToolbarHeight * 2 + Device.screenHeight * 0.085),
-              child: TabBarView(
-                controller: tabController,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  buildNotesList(),
-                  buildQuestionsList(),
-                ],
+            Expanded(
+              child: Container(
+                // height: Device.screenHeight - (kToolbarHeight * 2 + Device.screenHeight * 0.085),
+                child: TabBarView(
+                  controller: tabController,
+                  physics: NeverScrollableScrollPhysics(),
+                  children: [
+                    buildNotesList(),
+                    buildQuestionsList(),
+                  ],
+                ),
               ),
             ),
           ],

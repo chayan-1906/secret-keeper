@@ -1,13 +1,9 @@
 import 'package:diary_app/framework/widgets/skywa_text.dart';
 import 'package:diary_app/generated/assets.dart';
 import 'package:diary_app/models/folder_model.dart';
-import 'package:diary_app/screens/view_all_folders_screen.dart';
-import 'package:diary_app/screens/view_all_questions_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_page_transition/flutter_page_transition.dart';
 
 class FolderWidget extends StatelessWidget {
   final FolderModel folderModel;

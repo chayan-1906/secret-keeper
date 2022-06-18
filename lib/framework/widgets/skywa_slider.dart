@@ -1,5 +1,4 @@
 import 'package:diary_app/services/color_themes.dart';
-import 'package:diary_app/services/is_string_invalid.dart';
 import 'package:flutter/material.dart';
 
 class SkywaSlider extends StatelessWidget {

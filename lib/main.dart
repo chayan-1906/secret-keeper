@@ -1,8 +1,6 @@
-import 'package:diary_app/screens/auth_screens/signup_screen.dart';
 import 'package:diary_app/services/color_themes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_device_type/flutter_device_type.dart';
 
 import 'screens/auth_screens/user_state.dart';
 import 'screens/splash_screen.dart';
