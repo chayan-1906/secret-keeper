@@ -1,5 +1,6 @@
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
 import 'package:diary_app/framework/widgets/skywa_button.dart';
+import 'package:diary_app/models/user_model.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
 import 'package:diary_app/screens/view_all_questions_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,7 +10,9 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'add_question_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key key}) : super(key: key);
+  final User firebaseUser;
+
+  const HomeScreen({Key key, @required this.firebaseUser}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -46,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   PageTransition(
-                    child: const ViewAllFolderScreen(),
+                    child: ViewAllFolderScreen(firebaseUser: widget.firebaseUser),
                     type: PageTransitionType.rippleRightUp,
                   ),
                 );

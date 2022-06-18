@@ -134,10 +134,10 @@ class _ViewAllNotesScreenState extends State<ViewAllNotesScreen> {
                     autofocus: true,
                     onChanged: (_searchText) {
                       print(_searchText);
-                      notes = Search.search(
+                      notes = Search.noteSearch(
                         searchText: _searchController.text,
-                        items: folderModel.notes,
-                        stringsToBeEliminated: stringsToBeEliminated,
+                        notes: folderModel.notes,
+                        // stringsToBeEliminated: stringsToBeEliminated,
                       );
                       setState(() {});
                       print('notes: $notes');
@@ -195,17 +195,20 @@ class _ViewAllNotesScreenState extends State<ViewAllNotesScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12.0),
                       boxShadow: [
+                        /// bottom right
                         BoxShadow(
-                          offset: Offset(5, 5),
                           color: Colors.grey.shade400,
-                          spreadRadius: 2.0,
+                          offset: Offset(5, 5),
                           blurRadius: 5.0,
+                          spreadRadius: 2.0,
                         ),
+
+                        /// top left
                         BoxShadow(
-                          offset: Offset(-5, -5),
-                          color: Colors.grey.shade300,
+                          color: Colors.grey.shade200,
+                          offset: const Offset(-5, -5),
+                          blurRadius: 4.0,
                           spreadRadius: 2.0,
-                          blurRadius: 5.0,
                         ),
                       ],
                     ),

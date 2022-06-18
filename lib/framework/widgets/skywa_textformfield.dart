@@ -49,7 +49,7 @@ class SkywaTextFormField extends StatefulWidget {
     this.onChanged,
     this.isObscure = false,
   })  : keyboardType = TextInputType.text,
-        textCapitalization = TextCapitalization.sentences,
+        textCapitalization = TextCapitalization.none,
         assert(textEditingController != null),
         assert(labelText != null && labelText != 'null'),
         assert(hintText != null && hintText != 'null'),

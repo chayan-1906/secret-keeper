@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_device_type/flutter_device_type.dart';
 
 import '../../services/color_themes.dart';
 import '../../services/is_string_invalid.dart';
@@ -40,11 +39,11 @@ class SkywaAppBar extends StatelessWidget {
       centerTitle: centerTitle,
       elevation: 0.0,
       backgroundColor: ColorThemes.primaryColor,
-      shape: RoundedRectangleBorder(
+      /*shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           bottomRight: Radius.circular(Device.screenHeight * 0.02),
         ),
-      ),
+      ),*/
       leading: backIconButton,
       title: SkywaText(
         text: appbarText,

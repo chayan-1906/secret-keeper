@@ -8,7 +8,7 @@ import 'skywa_text.dart';
 
 class SkywaAlertDialog {
   final BuildContext context;
-  final bool barrierDismissible;
+  // final bool barrierDismissible;
   final String titleText;
   final EdgeInsetsGeometry titlePadding;
   final double fontSize;
@@ -19,12 +19,12 @@ class SkywaAlertDialog {
 
   SkywaAlertDialog.success({
     @required this.context,
-    this.barrierDismissible = true,
+    // this.barrierDismissible = true,
     this.titleText = '',
     this.titlePadding,
     this.fontSize = 18.0,
     @required this.content,
-    this.color = ColorThemes.secondaryColor,
+    this.color = ColorThemes.secondaryDarkColor,
     this.icon,
     this.actions,
   })  : assert(context != null),
@@ -34,7 +34,7 @@ class SkywaAlertDialog {
 
   SkywaAlertDialog.info({
     @required this.context,
-    this.barrierDismissible = true,
+    // this.barrierDismissible = true,
     this.titleText = '',
     this.titlePadding,
     this.fontSize = 18.0,
@@ -49,7 +49,7 @@ class SkywaAlertDialog {
 
   SkywaAlertDialog.error({
     @required this.context,
-    this.barrierDismissible = true,
+    // this.barrierDismissible = true,
     this.titleText = '',
     this.titlePadding,
     this.fontSize = 18.0,
@@ -65,13 +65,14 @@ class SkywaAlertDialog {
   void displayAlertDialog() {
     showDialog(
         context: context,
-        barrierDismissible: barrierDismissible,
+        barrierDismissible: false,
+        // barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: Colors.transparent,
             contentPadding: const EdgeInsets.all(0.0),
             titlePadding: const EdgeInsets.all(0.0),
-            title: !isStringInvalid(text: titleText)
+            /*title: !isStringInvalid(text: titleText)
                 ? Container(
                     width: Device.screenWidth * 0.65,
                     padding: titlePadding ??
@@ -119,6 +120,52 @@ class SkywaAlertDialog {
                 ),
               ),
               child: content,
+            ),*/
+            content: Container(
+              // height: 100.0,
+              width: Device.screenWidth,
+              constraints: BoxConstraints(
+                minHeight: Device.screenHeight * 0.08,
+                maxHeight: Device.screenHeight * 0.50,
+              ),
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  /// close icon
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: ColorThemes.errorColor,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  icon ?? Container(),
+                  Center(
+                    child: SkywaText(
+                      text: titleText,
+                      fontSize: fontSize + 5.0,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+
+                  /// content
+                  content,
+                ],
+              ),
             ),
             actions: actions,
           );

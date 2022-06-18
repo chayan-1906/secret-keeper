@@ -1,17 +1,29 @@
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
 import 'package:diary_app/framework/widgets/skywa_choice_chip_group.dart';
 import 'package:diary_app/framework/widgets/skywa_date_time_picker.dart';
 import 'package:diary_app/framework/widgets/skywa_dropdown_button.dart';
 import 'package:diary_app/framework/widgets/skywa_slider.dart';
+import 'package:diary_app/framework/widgets/skywa_snackbar.dart';
 import 'package:diary_app/framework/widgets/skywa_switch.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
 import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
 import 'package:diary_app/services/is_string_invalid.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 
+import '../framework/widgets/skywa_alert_dialog.dart';
 import '../framework/widgets/skywa_appbar.dart';
 import '../framework/widgets/skywa_auto_size_text.dart';
 import '../framework/widgets/skywa_button.dart';
@@ -22,11 +34,15 @@ import '../services/global_methods.dart';
 class AddNotesScreen extends StatefulWidget {
   final FolderModel folderModel;
   final Function fetchAllNotes;
+  final NoteModel noteModel;
+  final int index;
 
   const AddNotesScreen({
     Key key,
     @required this.folderModel,
     @required this.fetchAllNotes,
+    this.noteModel,
+    this.index,
   }) : super(key: key);
 
   @override
@@ -36,17 +52,44 @@ class AddNotesScreen extends StatefulWidget {
 class _AddNotesScreenState extends State<AddNotesScreen> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   FolderModel folderModel;
+  int noteIndexToBeEdited;
+  NoteModel noteModel;
   List<dynamic> questions;
   List<String> questionIds;
   List<String> questionTexts;
-  // List<String> answers;
-  Map<String, dynamic> answers;
+  Map<String, dynamic> answerMap;
   List<NoteModel> notes;
   Map<String, TextEditingController> qIdTextEditingController = {};
   List<dynamic> dbNotesList = [];
   bool isLoading = false;
+  double uploadProgress = 0.0;
+  bool allowPop = true;
 
-  Widget buildNotesAnswerWidget({@required int index}) {
+  /*void showLoadingAlertDialog({@required BuildContext context}) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(color: ColorThemes.primaryColor),
+                  SizedBox(height: 15.0),
+                  Text('Please wait...')
+                ],
+              ),
+            ),
+          );
+        });
+  }*/
+
+  Widget buildNotesAnswerWidget(
+      {@required BuildContext context, @required int index}) {
+    uploadProgress = 0.0;
     String questionType = questions[index]['questionType'];
     String questionText = questions[index]['questionText'];
     String questionId = questions[index]['questionId'];
@@ -343,8 +386,8 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             : null,
       );
     } else if (questionType == 'Chip') {
-      if (qIdTextEditingController[questionId].text.isEmpty)
-        qIdTextEditingController[questionId].text = '0';
+      // if (qIdTextEditingController[questionId].text.isEmpty)
+      // qIdTextEditingController[questionId].text = '0';
       return Stack(
         children: [
           SkywaTextFormField.none(
@@ -367,10 +410,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             width: Device.screenWidth,
             // color: Colors.redAccent,
             child: SkywaChoiceChipGroup(
-              selectedValue: isStringInvalid(
-                      text: qIdTextEditingController[questionId].text)
-                  ? 0
-                  : int.parse(qIdTextEditingController[questionId].text),
+              selectedValue: qIdTextEditingController[questionId].text,
               choiceChips: questions[index]['questionTypeAnswer'],
               onSelected: (value) {
                 setState(() {
@@ -479,32 +519,250 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
           ),
         ],
       );
+    } else if (questionType == 'Image') {
+      File pickedImageFile;
+      return Stack(
+        children: [
+          SkywaTextFormField.none(
+            textEditingController: qIdTextEditingController[questionId],
+            labelText: '',
+            hintText: '',
+            contentPadding: EdgeInsets.all(0.0),
+            // enabled: false,
+            readOnly: true,
+            showDecoration: false,
+            validator: isRequired
+                ? (value) {
+                    if (value.isEmpty) {
+                      return 'Mandatory field can\'t be empty';
+                    }
+                  }
+                : null,
+          ),
+          if (isStringInvalid(text: qIdTextEditingController[questionId].text))
+            SkywaButton.save(
+              text: 'Pick Image',
+              onTap: () {
+                /// show modal bottom sheet for image picker
+                SkywaBottomSheet(
+                  context: context,
+                  contentPadding: EdgeInsets.all(8.0),
+                  content: Container(
+                    // color: Colors.redAccent,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        /// camera
+                        ListTile(
+                          leading: Icon(Icons.camera_alt_rounded),
+                          title: SkywaText(text: 'Camera'),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            pickImage(
+                              imageSource: ImageSource.camera,
+                              pickedImageFile: pickedImageFile,
+                              questionId: questionId,
+                            );
+                          },
+                        ),
+
+                        /// gallery
+                        ListTile(
+                          leading: Icon(Icons.image_rounded),
+                          title: SkywaText(text: 'Gallery'),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            pickImage(
+                              imageSource: ImageSource.gallery,
+                              pickedImageFile: pickedImageFile,
+                              questionId: questionId,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            GestureDetector(
+              onTap: () {
+                /// show modal bottom sheet for image picker
+                SkywaBottomSheet(
+                  context: context,
+                  contentPadding: EdgeInsets.all(8.0),
+                  content: Container(
+                    // color: Colors.redAccent,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        /// camera
+                        ListTile(
+                          leading: Icon(Icons.camera_alt_rounded),
+                          title: SkywaText(text: 'Camera'),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            pickImage(
+                              imageSource: ImageSource.camera,
+                              pickedImageFile: pickedImageFile,
+                              questionId: questionId,
+                            );
+                          },
+                        ),
+
+                        /// gallery
+                        ListTile(
+                          leading: Icon(Icons.image_rounded),
+                          title: SkywaText(text: 'Gallery'),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            pickImage(
+                              imageSource: ImageSource.gallery,
+                              pickedImageFile: pickedImageFile,
+                              questionId: questionId,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              child: Image.network(qIdTextEditingController[questionId].text),
+            ),
+        ],
+      );
+    } else if (questionType == 'File') {
+      File pickedFile;
+      String fileName = GlobalMethods.getFilenameFromUrl(
+          url: qIdTextEditingController[questionId].text);
+      Icon fileIcon = GlobalMethods.getFileIcon(fileName: fileName);
+      return Stack(
+        children: [
+          SkywaTextFormField.none(
+            textEditingController: qIdTextEditingController[questionId],
+            labelText: '',
+            hintText: '',
+            contentPadding: EdgeInsets.all(0.0),
+            // enabled: false,
+            readOnly: true,
+            showDecoration: false,
+            validator: isRequired
+                ? (value) {
+                    if (value.isEmpty) {
+                      return 'Mandatory field can\'t be empty';
+                    }
+                  }
+                : null,
+          ),
+          if (isStringInvalid(text: qIdTextEditingController[questionId].text))
+            SkywaButton.save(
+              text: 'Pick File',
+              onTap: () {
+                pickFile(pickedFile: pickedFile, questionId: questionId);
+              },
+            )
+          else
+            ListTile(
+              onTap: () async {
+                /*pickFile(pickedFile: pickedFile, questionId: questionId);*/
+                setState(() {
+                  isLoading = true;
+                });
+                GlobalMethods.downloadAndOpenFile(
+                        url: qIdTextEditingController[questionId].text)
+                    .then((value) {
+                  if (mounted) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                });
+                // print(qIdTextEditingController[questionId].text);
+                // print(qIdTextEditingController[questionId]
+                //     .text
+                //     .split('%2Ffiles%2F')[1]
+                //     .replaceAll('%20', ' ')
+                //     .split('?alt=media&token=')[0]);
+              },
+              leading: fileIcon,
+              title: SkywaText(
+                text: GlobalMethods.getFilenameFromUrl(
+                    url: qIdTextEditingController[questionId].text),
+                maxLines: 3,
+              ),
+            ),
+        ],
+      );
     }
     return Container();
   }
 
-  Future<void> saveNote() async {
+  /*Future<void> downloadAndOpenFile({@required String url}) async {
+    String filename = url
+        .split('%2Ffiles%2F')[1]
+        .replaceAll('%20', ' ')
+        .split('?alt=media&token=')[0];
+    final directory = await getExternalStorageDirectory();
+    File saveFileName = File('${directory.path}/$filename');
+    setState(() {
+      isLoading = true;
+    });
+    await Dio().download(
+      url,
+      saveFileName.path,
+      onReceiveProgress: (received, total) {
+        if (total != -1) {
+          print((received / total * 100).toStringAsFixed(0) + '%');
+        }
+      },
+    ).then((value) async {
+      setState(() {
+        isLoading = false;
+      });
+      await OpenFile.open(saveFileName.path);
+    });
+  }*/
+
+  Future<void> saveNote({@required BuildContext context}) async {
+    bool allFieldsEmpty = true;
+
+    /// don't let user to save note without filling any of the questions
+    for (int i = 0; i < questionIds.length; i++) {
+      if (!isStringInvalid(
+          text: qIdTextEditingController[questionIds[i]].text)) {
+        allFieldsEmpty = false;
+      }
+    }
+    if (allFieldsEmpty) {
+      SkywaSnackBar.error(
+        context: context,
+        snackbarText: 'Please enter at least one field',
+      );
+      return;
+    }
     if (_formKey.currentState.validate()) {
       setState(() {
         isLoading = true;
       });
-      answers.clear();
+      answerMap.clear();
       String noteId = GlobalMethods.generateUniqueId();
       String noteCreationDate = DateTime.now().toString();
       for (int i = 0; i < questionIds.length; i++) {
-        answers.addEntries(
+        answerMap.addEntries(
           [
             MapEntry(
-              questionTexts[i],
+              questionIds[i],
               qIdTextEditingController[questionIds[i]].text,
             ),
           ],
         );
       }
-      print('answers: $answers');
+      print('answers: $answerMap');
       NoteModel noteToBeAdded = NoteModel(
         noteId: noteId,
-        noteAnswer: answers,
+        noteAnswer: answerMap,
         noteCreationDate: noteCreationDate,
       );
       dbNotesList.add(noteToBeAdded.toMap());
@@ -520,6 +778,208 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     }
   }
 
+  Future<void> editNote({@required BuildContext context}) async {
+    bool allFieldsEmpty = true;
+
+    /// don't let user to save note without filling any of the questions
+    for (int i = 0; i < questionIds.length; i++) {
+      if (!isStringInvalid(
+          text: qIdTextEditingController[questionIds[i]].text)) {
+        allFieldsEmpty = false;
+      }
+    }
+    if (allFieldsEmpty) {
+      SkywaSnackBar.error(
+        context: context,
+        snackbarText: 'Please enter at least one field',
+      );
+      return;
+    }
+    if (_formKey.currentState.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+      for (int i = 0; i < questionIds.length; i++) {
+        if (!dbNotesList[noteIndexToBeEdited]['noteAnswer']
+            .containsKey(questionIds[i])) {
+          dbNotesList[noteIndexToBeEdited]['noteAnswer'].addEntries([
+            MapEntry(
+              questionIds[i],
+              qIdTextEditingController[questionIds[i]].text,
+            )
+          ]);
+        } else {
+          dbNotesList[noteIndexToBeEdited]['noteAnswer'].update(questionIds[i],
+              (value) {
+            return qIdTextEditingController[questionIds[i]].text;
+          });
+        }
+      }
+      print('683: ${dbNotesList[noteIndexToBeEdited]['noteAnswer']}');
+      folderReference.doc(folderModel.folderId).update({
+        'notes': dbNotesList,
+      }).then((value) {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pop(context);
+        widget.fetchAllNotes();
+      });
+    }
+  }
+
+  void populateFields() {
+    for (var question in questions) {
+      qIdTextEditingController[question['questionId']] = TextEditingController(
+          text: noteModel.noteAnswer[question['questionId']]);
+    }
+  }
+
+  void showPopAlertDialog({@required BuildContext context}) {
+    SkywaAlertDialog.error(
+      context: context,
+      titleText: 'Warning',
+      icon: Icon(
+        Icons.warning_amber_rounded,
+        color: ColorThemes.errorColor,
+        size: 40.0,
+      ),
+      titlePadding: EdgeInsets.only(
+        top: Device.screenHeight * 0.025,
+        bottom: Device.screenHeight * 0.025,
+        left: Device.screenWidth * 0.05,
+        right: Device.screenWidth * 0.05,
+      ),
+      fontSize: 22.0,
+      content: Container(
+        // height: 100.0,
+        width: Device.screenWidth,
+        // color: Colors.teal,
+        // constraints: BoxConstraints(
+        //   minHeight: Device.screenHeight * 0.08,
+        //   maxHeight: Device.screenHeight * 0.55,
+        // ),
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          // shrinkWrap: true,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SkywaText(text: 'Do you want to discard?'),
+            SizedBox(height: 25.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SkywaButton.info(
+                    text: 'No',
+                    onTap: () {
+                      Navigator.pop(context);
+                    }),
+                SizedBox(width: 10.0),
+                SkywaButton.info(
+                    text: 'Yes',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> pickImage({
+    @required ImageSource imageSource,
+    @required File pickedImageFile,
+    @required String questionId,
+  }) async {
+    ImagePicker imagePicker = ImagePicker();
+    String downloadUrl = '';
+    try {
+      final _pickedImage = await imagePicker.pickImage(
+        source: imageSource,
+        imageQuality: 99,
+      );
+      if (_pickedImage != null) {
+        pickedImageFile = File(_pickedImage.path);
+        setState(() {
+          isLoading = true;
+        });
+        UploadTask snapshot = firebaseStorage
+            .ref()
+            .child(
+                '${firebaseAuth.currentUser.uid}/images/${basename(pickedImageFile.path)}')
+            .putFile(pickedImageFile);
+        snapshot.snapshotEvents.listen((event) async {
+          uploadProgress = ((event.bytesTransferred.toDouble() /
+                      event.totalBytes.toDouble()) *
+                  100)
+              .roundToDouble();
+          print('uploadProgress: $uploadProgress');
+          if (uploadProgress == 100.0) {
+            downloadUrl = await event.ref.getDownloadURL();
+            print('downloadUrl: $downloadUrl');
+            setState(() {
+              isLoading = false;
+              qIdTextEditingController[questionId].text = downloadUrl;
+            });
+          }
+        });
+      } else {
+        print('No image selected');
+      }
+    } catch (error) {
+      print('Error in image picker: $error');
+      print('catch: No image picked');
+    }
+  }
+
+  Future<void> pickFile({
+    @required File pickedFile,
+    @required String questionId,
+  }) async {
+    String downloadUrl = '';
+    try {
+      FilePickerResult result = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx'],
+      );
+      if (result != null) {
+        pickedFile = File(result.files.single.path);
+        setState(() {
+          isLoading = true;
+        });
+        UploadTask snapshot = firebaseStorage
+            .ref()
+            .child(
+                '${firebaseAuth.currentUser.uid}/files/${basename(pickedFile.path)}')
+            .putFile(pickedFile);
+        snapshot.snapshotEvents.listen((event) async {
+          uploadProgress = ((event.bytesTransferred.toDouble() /
+                      event.totalBytes.toDouble()) *
+                  100)
+              .roundToDouble();
+          print('uploadProgress: $uploadProgress');
+          if (uploadProgress == 100.0) {
+            downloadUrl = await event.ref.getDownloadURL();
+            print('downloadUrl: $downloadUrl');
+            setState(() {
+              isLoading = false;
+              qIdTextEditingController[questionId].text = downloadUrl;
+            });
+          }
+        });
+      } else {
+        print('No files selected');
+      }
+    } catch (error) {
+      print('Error in file picker: $error');
+      print('catch: No file picked');
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -528,7 +988,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     questions = folderModel.questions;
     questionIds = [];
     questionTexts = [];
-    answers = {};
+    answerMap = {};
     for (var question in questions) {
       qIdTextEditingController.addEntries([
         MapEntry(question['questionId'], TextEditingController()),
@@ -537,60 +997,163 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
       questionTexts.add(question['questionText']);
     }
     dbNotesList = folderModel.notes;
+    noteModel = widget.noteModel;
+    noteIndexToBeEdited = widget.index;
+    if (noteModel != null) populateFields();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: SkywaAppBar(
-          appbarText: 'Add Notes',
-          actions: [
-            if (qIdTextEditingController.isNotEmpty)
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    qIdTextEditingController;
-                  });
-                  // TODO: FOR CHOICE CHIP qIdTextEditingController[questionId].text IS ASSIGNED TO CORRESPONDING INDEX VALUE. IF REQUIRED, GET THE STRING VALUE FROM THE questions[index]['questionTypeAnswer'][SELECTED INDEX]
-                  saveNote();
+    return WillPopScope(
+      onWillPop: () {
+        qIdTextEditingController.entries.forEach((element) {
+          if (element.value.text.isNotEmpty) allowPop = false;
+        });
+        if (!allowPop)
+          showPopAlertDialog(context: context);
+        else
+          Navigator.pop(context);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: SkywaAppBar(
+            appbarText: 'Add Notes',
+            backIconButton: IconButton(
+              onPressed: () {
+                qIdTextEditingController.entries.forEach((element) {
+                  if (element.value.text.isNotEmpty) allowPop = false;
+                });
+                if (!allowPop)
+                  showPopAlertDialog(context: context);
+                else
+                  Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios_new_rounded),
+            ),
+            actions: [
+              if (qIdTextEditingController.isNotEmpty)
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      qIdTextEditingController;
+                    });
+                    if (noteModel == null)
+                      saveNote(context: context);
+                    else
+                      editNote(context: context);
+                  },
+                  icon: SkywaAutoSizeText(
+                    text: 'Save',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        body: Stack(
+          children: [
+            Form(
+              key: _formKey,
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(
+                  horizontal: Device.screenWidth * 0.04,
+                  vertical: 20.0,
+                ),
+                itemCount: questions.length,
+                itemBuilder: (BuildContext buildContext, int index) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// if question type not switch then only show question text
+                      if (questions[index]['questionType'] != 'Switch')
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: questions[index]['questionText'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18.0,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  if (questions[index]['isRequired'])
+                                    WidgetSpan(
+                                      child: Transform.translate(
+                                        offset: Offset(0.0, -2.0),
+                                        child: RichText(
+                                          text: TextSpan(
+                                            text: '  *',
+                                            style: TextStyle(
+                                                color: ColorThemes.errorColor),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 15.0),
+                          ],
+                        ),
+                      buildNotesAnswerWidget(context: context, index: index),
+                      const SizedBox(height: 20.0),
+                    ],
+                  );
                 },
-                // icon: Icon(Icons.check_rounded),
-                icon: SkywaAutoSizeText(text: 'Save', color: Colors.white),
+              ),
+            ),
+            if (isLoading)
+              Stack(
+                children: [
+                  Container(
+                    height: Device.screenHeight,
+                    width: Device.screenWidth,
+                    decoration: BoxDecoration(color: Colors.transparent),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                      child: Container(
+                        height: 100.0,
+                        width: Device.screenWidth * 0.70,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(25.0),
+                          border: Border.all(
+                            width: 2.0,
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                                color: ColorThemes.primaryDarkColor),
+                            SizedBox(height: 10.0),
+                            SkywaText(
+                              text: 'Please wait...',
+                              fontWeight: FontWeight.w500,
+                              color: ColorThemes.primaryDarkColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
           ],
-        ),
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView.builder(
-          shrinkWrap: true,
-          padding: EdgeInsets.symmetric(
-            horizontal: Device.screenWidth * 0.04,
-            vertical: 20.0,
-          ),
-          itemCount: questions.length,
-          itemBuilder: (BuildContext buildContext, int index) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (questions[index]['questionType'] != 'Switch')
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SkywaText(
-                          text:
-                              '${questions[index]['questionText']} ${questions[index]['isRequired']}'),
-                      const SizedBox(height: 15.0),
-                    ],
-                  ),
-                buildNotesAnswerWidget(index: index),
-                const SizedBox(height: 20.0),
-              ],
-            );
-          },
         ),
       ),
     );

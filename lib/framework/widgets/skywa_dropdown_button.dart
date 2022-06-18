@@ -20,7 +20,9 @@ class SkywaDropdownButton extends StatelessWidget {
     this.isExpanded = true,
     this.isDense = false,
     @required this.selectedValue,
-  }) : super(key: key);
+  })  : assert(items != null && items.length != 0),
+        assert(onChanged != null),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +61,7 @@ class SkywaDropdownButton extends StatelessWidget {
                     items: items.map((newValue) {
                       return DropdownMenuItem<String>(
                         value: newValue,
-                        child: SkywaText(text: newValue),
+                        child: SkywaText(text: newValue.toString()),
                       );
                     }).toList(),
                     onChanged: onChanged,

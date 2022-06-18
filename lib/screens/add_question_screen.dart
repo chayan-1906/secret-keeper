@@ -1,6 +1,8 @@
 import 'package:diary_app/framework/widgets/skywa_alert_dialog.dart';
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
+import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
 import 'package:diary_app/framework/widgets/skywa_snackbar.dart';
+import 'package:diary_app/models/question_model.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
 import 'package:diary_app/widgets/loading_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,11 +21,13 @@ import '../services/global_methods.dart';
 class AddQuestionScreen extends StatefulWidget {
   final FolderModel folderModel;
   final Function fetchAllQuestions;
+  final QuestionModel questionModel;
 
   const AddQuestionScreen({
     Key key,
     @required this.folderModel,
     @required this.fetchAllQuestions,
+    this.questionModel,
   }) : super(key: key);
 
   @override
@@ -32,10 +36,10 @@ class AddQuestionScreen extends StatefulWidget {
 
 class _AddQuestionScreenState extends State<AddQuestionScreen> {
   FolderModel folderModel;
-  final TextEditingController _questionController = TextEditingController();
-  final TextEditingController _questionTypeController = TextEditingController();
-  final TextEditingController _questionTypeAnswerController =
-      TextEditingController();
+  QuestionModel questionModel;
+  TextEditingController _questionController = TextEditingController();
+  TextEditingController _questionTypeController = TextEditingController();
+  TextEditingController _questionTypeAnswerController = TextEditingController();
   List<dynamic> questions = [];
   bool isRequired = false;
   List<String> availableQuestionTypes = [
@@ -52,6 +56,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     'Switch', // 10
     'DropDown', // 11
     'Slider', // 12
+    'Image', // 13
+    'File', // 14
   ];
   bool isLoading = false;
 
@@ -136,6 +142,12 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         labelText: 'Answers',
         hintText: 'Min & Max values for Slider separated by new line',
       );
+    } else if (_questionTypeController.text == availableQuestionTypes[13]) {
+      /// image
+      return Container();
+    } else if (_questionTypeController.text == availableQuestionTypes[14]) {
+      /// file
+      return Container();
     }
     return Container();
   }
@@ -229,11 +241,98 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     }
   }
 
+  Future<void> editQuestion() async {
+    if (_questionController.text.isEmpty) {
+      SkywaSnackBar.error(
+        context: context,
+        snackbarText: 'Question is required',
+      );
+      return;
+    } else if (_questionTypeController.text.isEmpty) {
+      SkywaSnackBar.error(
+        context: context,
+        snackbarText: 'Question Type is required',
+      );
+      return;
+    } else {
+      if ((_questionTypeController.text == 'Chip' ||
+              _questionTypeController.text == 'DropDown' ||
+              _questionTypeController.text == 'Slider') &&
+          _questionTypeAnswerController.text.isEmpty) {
+        SkywaSnackBar.error(
+          context: context,
+          snackbarText: 'Answers field can\'t be empty',
+        );
+        return;
+      } else {
+        List<String> validAnswers = [];
+        validAnswers = _questionTypeAnswerController.text.isNotEmpty
+            ? _questionTypeAnswerController.text.split('\n').toList()
+            : [];
+        if ((_questionTypeController.text == 'Chip' ||
+                _questionTypeController.text == 'DropDown' ||
+                _questionTypeController.text == 'Slider') &&
+            validAnswers.length < 2) {
+          if (_questionTypeController.text == 'Chip' ||
+              _questionTypeController.text == 'DropDown') {
+            SkywaSnackBar.error(
+              context: context,
+              snackbarText: 'Minimum two options are required',
+            );
+          } else if (_questionTypeController.text == 'Slider') {
+            SkywaSnackBar.error(
+              context: context,
+              snackbarText: 'Minimum & Maximum both values are required',
+            );
+          }
+          return;
+        }
+
+        /// everything is valid
+        setState(() {
+          isLoading = true;
+        });
+        Map<String, dynamic> questionToBeEdited = {
+          'questionId': questionModel.questionId,
+          'questionText': _questionController.text,
+          'isRequired': isRequired,
+          'questionCreationDate': questionModel.questionCreationDate,
+          'questionType': _questionTypeController.text,
+          'questionTypeAnswer': validAnswers,
+        };
+        for (var ques in questions) {
+          if (ques['questionId'] == questionModel.questionId) {
+            setState(() {
+              questions[questions.indexOf(ques)] = questionToBeEdited;
+            });
+          }
+        }
+        folderReference
+            .doc(folderModel.folderId)
+            .update({'questions': questions}).then((value) {
+          print('Question edited: $questionToBeEdited');
+        }).then((value) {
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pop(context);
+          setState(() {
+            widget.fetchAllQuestions();
+          });
+        });
+      }
+    }
+  }
+
   void showPopAlertDialog() {
     SkywaAlertDialog.error(
       context: context,
       titleText: 'Warning',
-      icon: Icon(Icons.warning_amber_rounded, color: Colors.white),
+      icon: Icon(
+        Icons.warning_amber_rounded,
+        color: ColorThemes.errorColor,
+        size: 40.0,
+      ),
       titlePadding: EdgeInsets.only(
         top: Device.screenHeight * 0.025,
         bottom: Device.screenHeight * 0.025,
@@ -242,19 +341,19 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       ),
       fontSize: 22.0,
       content: Container(
-        height: 100.0,
+        // height: 100.0,
         width: Device.screenWidth,
-        constraints: BoxConstraints(
-          minHeight: Device.screenHeight * 0.08,
-          maxHeight: Device.screenHeight * 0.55,
-        ),
+        // constraints: BoxConstraints(
+        //   minHeight: Device.screenHeight * 0.08,
+        //   maxHeight: Device.screenHeight * 0.55,
+        // ),
         padding: const EdgeInsets.all(12.0),
-        child: ListView(
-          shrinkWrap: true,
+        child: Column(
+          // shrinkWrap: true,
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SkywaText(text: 'Do you want to discard?'),
-            SizedBox(height: 15.0),
+            SizedBox(height: 25.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -278,12 +377,30 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
+  void populateFields() {
+    _questionController =
+        TextEditingController(text: questionModel.questionText);
+    isRequired = questionModel.isRequired;
+    _questionTypeController =
+        TextEditingController(text: questionModel.questionType);
+    String answers = '';
+    for (int i = 0; i < questionModel.questionTypeAnswer.length; i++) {
+      print('quesTypeAns: ${questionModel.questionTypeAnswer[i]}');
+      answers = answers +
+          questionModel.questionTypeAnswer[i] +
+          (i == questionModel.questionTypeAnswer.length - 1 ? '' : '\n');
+      _questionTypeAnswerController = TextEditingController(text: answers);
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     folderModel = widget.folderModel;
     questions = folderModel.questions;
+    questionModel = widget.questionModel;
+    if (questionModel != null) populateFields();
   }
 
   @override
@@ -293,8 +410,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         if (_questionController.text.isNotEmpty ||
             isRequired ||
             _questionTypeController.text.isNotEmpty ||
-            _questionTypeAnswerController.text.isNotEmpty) showPopAlertDialog();
-        return Future.value(false);
+            _questionTypeAnswerController.text.isNotEmpty)
+          showPopAlertDialog();
+        else
+          Navigator.pop(context);
+        return Future.value(true);
       },
       child: Scaffold(
         appBar: PreferredSize(
@@ -302,20 +422,41 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           child: SkywaAppBar(
             appbarText: 'Add Question',
             backIconButton: IconButton(
-              onPressed: showPopAlertDialog,
+              onPressed: () {
+                if (_questionController.text.isNotEmpty ||
+                    isRequired ||
+                    _questionTypeController.text.isNotEmpty ||
+                    _questionTypeAnswerController.text.isNotEmpty)
+                  showPopAlertDialog();
+                else
+                  Navigator.pop(context);
+              },
               icon: Icon(Icons.arrow_back_ios_rounded),
             ),
             actions: [
               if (_questionController.text.isNotEmpty &&
                   _questionTypeController.text.isNotEmpty)
-                SkywaButton.save(
-                    text: 'Save',
-                    onTap: () {
-                      setState(() {
-                        _questionController;
-                      });
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _questionController;
+                    });
+                    if (questionModel == null) // when adding question
                       saveQuestion();
-                    }),
+                    else // when editing question
+                      editQuestion();
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(8.0),
+                    child: SkywaAutoSizeText(
+                      text: 'Save',
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

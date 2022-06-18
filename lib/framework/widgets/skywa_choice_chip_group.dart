@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class SkywaChoiceChipGroup extends StatefulWidget {
   final List choiceChips;
   final ValueChanged onSelected;
-  final int selectedValue;
+  final String selectedValue;
   final double fontSize;
   final WrapAlignment wrapAlignment;
   final Color backgroundColor;
@@ -36,7 +36,7 @@ class SkywaChoiceChipGroup extends StatefulWidget {
 class _SkywaChoiceChipGroupState extends State<SkywaChoiceChipGroup> {
   @override
   Widget build(BuildContext context) {
-    return ChipsChoice.single(
+    return ChipsChoice<String>.single(
       value: widget.selectedValue,
       wrapped: true,
       choiceActiveStyle: C2ChoiceStyle(
@@ -56,7 +56,7 @@ class _SkywaChoiceChipGroupState extends State<SkywaChoiceChipGroup> {
       onChanged: widget.onSelected,
       choiceItems: C2Choice.listFrom(
         source: widget.choiceChips,
-        value: (chipIndex, chipLabel) => chipIndex,
+        value: (chipIndex, chipLabel) => chipLabel,
         label: (chipIndex, chipLabel) => chipLabel,
       ),
     );

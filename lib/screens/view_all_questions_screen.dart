@@ -145,22 +145,22 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
                                     titlePadding: const EdgeInsets.all(15.0),
                                     icon: const Icon(
                                       Icons.warning_amber_rounded,
-                                      color: Colors.white,
+                                      color: ColorThemes.errorColor,
+                                      size: 45.0,
                                     ),
                                     content: Container(
                                       width: Device.screenWidth,
-                                      height: 130.0,
+                                      // height: 200.0,
                                       padding: const EdgeInsets.all(20.0),
-                                      child: ListView(
-                                        shrinkWrap: true,
+                                      child: Column(
                                         children: [
                                           SkywaText(
                                             text:
-                                                'Do you want to delete this question?',
+                                                'Do you want to delete this question?\n This question will be deleted from all your responses',
                                             fontSize: 18.0,
                                             fontWeight: FontWeight.w500,
                                           ),
-                                          const SizedBox(height: 20.0),
+                                          const SizedBox(height: 10.0),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,

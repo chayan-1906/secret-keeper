@@ -1,17 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
 import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/models/question_model.dart';
+import 'package:diary_app/screens/landing_screen.dart';
+import 'package:diary_app/screens/notes_questions_tabbar_screen.dart';
 import 'package:diary_app/screens/view_all_notes_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../framework/widgets/skywa_alert_dialog.dart';
@@ -22,31 +24,40 @@ import '../framework/widgets/skywa_text.dart';
 import '../framework/widgets/skywa_textformfield.dart';
 import '../services/color_themes.dart';
 import '../services/global_methods.dart';
+import '../services/search.dart';
 import '../widgets/folder_widget.dart';
-import '../widgets/question_row_widget.dart';
 import 'view_all_questions_screen.dart';
 
+FirebaseAuth firebaseAuth;
 CollectionReference folderReference;
+FirebaseFirestore firebaseFirestore;
+FirebaseStorage firebaseStorage;
 
 class ViewAllFolderScreen extends StatefulWidget {
-  const ViewAllFolderScreen({Key key}) : super(key: key);
+  final User firebaseUser;
+
+  const ViewAllFolderScreen({Key key, @required this.firebaseUser})
+      : super(key: key);
 
   @override
   State<ViewAllFolderScreen> createState() => _ViewAllFolderScreenState();
 }
 
 class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
-  // List _folders = [];
   final TextEditingController _folderController = TextEditingController();
+  final TextEditingController _folderSearchController = TextEditingController();
+  User firebaseUser;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   List<FolderModel> folders = [];
+  List<FolderModel> searchedFolders = [];
   List<dynamic> questions = [];
   bool isLoading = false;
-  SkywaAppBar _defaultAppBar;
+  AppBar _defaultAppBar;
   SkywaAppBar _selectedAppBar;
+  String initialLetter = '';
   FolderModel selectedFolderModel;
   final List<int> _selectedFoldersIndex = [];
+  bool isSearching = false;
 
   Widget folderShimmer() {
     return GridView.builder(
@@ -97,6 +108,14 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
     });
   }
 
+  Future<void> editFolder({@required FolderModel folderModel}) async {
+    folderReference
+        .doc(folderModel.folderId)
+        .update({'folderName': _folderController.text}).then((value) {
+      refreshViewAllFolders();
+    });
+  }
+
   Future<void> deleteFolder({@required FolderModel folderModel}) async {
     setState(() {
       isLoading = true;
@@ -105,20 +124,19 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
       setState(() {
         isLoading = false;
       });
-      refreshViewAllFolders();
     });
   }
 
-  void showAlertDialog() {
+  void showAddFolderAlertDialog(
+      {FolderModel folderModel, String mode = 'add'}) {
     SkywaAlertDialog.success(
       context: context,
-      barrierDismissible: false,
-      titleText: 'Add New Folder',
+      titleText: 'Add New Label',
       titlePadding: EdgeInsets.only(
         top: Device.screenHeight * 0.025,
         bottom: Device.screenHeight * 0.025,
         left: Device.screenWidth * 0.05,
-        right: Device.screenWidth * 0.01,
+        right: Device.screenWidth * 0.05,
       ),
       fontSize: 22.0,
       content: Container(
@@ -128,12 +146,14 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
           maxHeight: Device.screenHeight * 0.55,
         ),
         padding: const EdgeInsets.all(12.0),
-        // TODO: if _questionController.isNotEmpty then show save button
         child: ListView.builder(
           shrinkWrap: true,
           itemCount: 1,
           itemBuilder: (BuildContext context, int index) {
-            _folderController.clear();
+            if (mode == 'add')
+              _folderController.clear();
+            else if (mode == 'edit')
+              _folderController.text = folderModel.folderName;
             return Column(
               children: [
                 StatefulBuilder(builder: (context, setState) {
@@ -141,8 +161,8 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                     children: [
                       SkywaTextFormField.name(
                         textEditingController: _folderController,
-                        labelText: 'Folder Name',
-                        hintText: 'Enter folder name...',
+                        labelText: 'Label Name',
+                        hintText: 'Enter label name...',
                         onChanged: (value) {
                           setState(() {
                             _folderController;
@@ -171,7 +191,10 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                               setState(() {
                                 _folderController;
                               });
-                              createFolder();
+                              if (mode == 'add')
+                                createFolder();
+                              else if (mode == 'edit')
+                                editFolder(folderModel: folderModel);
                             }),
                     ],
                   );
@@ -179,6 +202,64 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void showProfileAlertDialog() {
+    SkywaAlertDialog.info(
+      context: context,
+      fontSize: 22.0,
+      content: Container(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          // shrinkWrap: true,
+          children: [
+            /// image
+            Container(
+              height: 120.0,
+              width: 120.0,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: ColorThemes.primaryDarkColor,
+                borderRadius: BorderRadius.circular(450.0),
+              ),
+              child: SkywaText(
+                text: initialLetter,
+                fontSize: 80.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10.0),
+
+            /// display name
+            SkywaText(
+              text: firebaseUser.displayName,
+              fontSize: 30.0,
+              fontWeight: FontWeight.w700,
+            ),
+            SizedBox(height: 5.0),
+
+            /// email
+            SkywaAutoSizeText(
+              text: firebaseUser.email,
+              textAlign: TextAlign.end,
+              textStyle: TextStyle(fontSize: 20.0),
+              fontWeight: FontWeight.w500,
+            ),
+            SizedBox(height: 5.0),
+
+            /// last sign in at
+            SkywaAutoSizeText(
+              text:
+                  'Last signed in: ${firebaseUser.metadata.lastSignInTime.toString().substring(0, 16)}',
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w500,
+            ),
+          ],
         ),
       ),
     );
@@ -209,41 +290,297 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
           questions: queryDocumentSnapshot['questions'],
           notes: queryDocumentSnapshot['notes'],
         );
+        if (mounted) {
+          setState(() {
+            folders.add(folderModel);
+            folders.sort(
+              (a, b) {
+                return DateTime.parse(a.folderCreationDate)
+                    .compareTo(DateTime.parse(b.folderCreationDate));
+              },
+            );
+          });
+        }
+      }
+      if (mounted) {
         setState(() {
-          folders.add(folderModel);
-          folders.sort(
-            (a, b) {
-              return DateTime.parse(a.folderCreationDate)
-                  .compareTo(DateTime.parse(b.folderCreationDate));
-            },
-          );
+          isLoading = false;
         });
       }
-      setState(() {
-        isLoading = false;
-      });
     });
   }
 
   Future<void> refreshViewAllFolders() async {
+    setState(() {
+      isLoading = true;
+    });
     fetchAllFolders();
+  }
+
+  Widget buildFolderGridView() {
+    return Container(
+      height: Device.screenHeight,
+      width: Device.screenWidth,
+      child: Stack(
+        children: [
+          GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              childAspectRatio: 1.10,
+              crossAxisCount: 2,
+            ),
+            itemCount: isSearching ? searchedFolders.length : folders.length,
+            itemBuilder: (BuildContext gridViewContext, int index) {
+              FolderModel folderModel;
+              folderModel =
+                  isSearching ? searchedFolders[index] : folders[index];
+              // print('folderModel: $folderModel');
+              return GestureDetector(
+                onLongPress: () {
+                  setState(() {
+                    _changeSelection(enabled: true, index: index);
+                  });
+                },
+                onTap: () {
+                  setState(() {
+                    if (_selectedFoldersIndex.contains(index)) {
+                      _selectedFoldersIndex.remove(index);
+                    } else if (_selectedFoldersIndex.isEmpty) {
+                      if (folderModel.questions.isEmpty) {
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            child: ViewAllQuestionsScreen(
+                              folderModel: folderModel,
+                              refreshViewAllFolders: refreshViewAllFolders,
+                            ),
+                            type: PageTransitionType.rippleRightUp,
+                          ),
+                        );
+                      } else {
+                        /*SkywaBottomSheet(
+                          context: gridViewContext,
+                          content: Container(
+                            padding: const EdgeInsets.all(10.0),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                /// view notes
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        child: ViewAllNotesScreen(
+                                          folderModel: folderModel,
+                                          refreshViewAllFolders:
+                                              refreshViewAllFolders,
+                                        ),
+                                        type: PageTransitionType.rippleRightUp,
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: SkywaText(text: 'View Notes'),
+                                  ),
+                                ),
+
+                                /// view questions
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        child: ViewAllQuestionsScreen(
+                                          folderModel: folderModel,
+                                          refreshViewAllFolders:
+                                              refreshViewAllFolders,
+                                        ),
+                                        type: PageTransitionType.rippleRightUp,
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: SkywaText(text: 'View Questions'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );*/
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.rippleRightUp,
+                            child: NotesQuestionTabBarScreen(
+                              folderModel: folderModel,
+                              refreshViewAllFolders: refreshViewAllFolders,
+                            ),
+                          ),
+                        );
+                      }
+                    } else {
+                      _selectedFoldersIndex.add(index);
+                    }
+                    // print('_selectedFoldersIndex: ${_selectedFoldersIndex}');
+                  });
+                },
+                child: Stack(
+                  children: [
+                    FolderWidget(
+                      folderModel: folderModel,
+                      isSelected: _selectedFoldersIndex.isNotEmpty,
+                      refreshViewAllFolders: refreshViewAllFolders,
+                      showAddFolderAlertDialog: showAddFolderAlertDialog,
+                    ),
+                    if (_selectedFoldersIndex.contains(index))
+                      const Positioned(
+                        left: 20.0,
+                        top: 30.0,
+                        child: Icon(
+                          Icons.check_box_rounded,
+                          color: Colors.black,
+                        ),
+                      )
+                    else if (_selectedFoldersIndex.isNotEmpty &&
+                        !_selectedFoldersIndex.contains(index))
+                      const Positioned(
+                        left: 20.0,
+                        top: 30.0,
+                        child: Icon(
+                          Icons.check_box_outline_blank_rounded,
+                          color: Colors.black,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          /// fab for add folder
+          Positioned(
+            bottom: 10.0,
+            right: 10.0,
+            child: _selectedFoldersIndex.isNotEmpty
+                ? Container()
+                : SkywaFloatingActionButton(
+                    iconData: AntDesign.addfolder,
+                    iconSize: 20.0,
+                    onTap: () {
+                      showAddFolderAlertDialog();
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    folderReference = _firebaseFirestore
+    firebaseAuth = FirebaseAuth.instance;
+    firebaseFirestore = FirebaseFirestore.instance;
+    firebaseStorage = FirebaseStorage.instance;
+    folderReference = firebaseFirestore
         .collection('users')
         .doc(_firebaseAuth.currentUser.uid)
         .collection('folders');
+    firebaseUser = widget.firebaseUser;
+    initialLetter =
+        GlobalMethods.getInitialLetter(text: firebaseUser.displayName);
     fetchAllFolders();
   }
 
   @override
   Widget build(BuildContext context) {
-    _defaultAppBar = SkywaAppBar(appbarText: 'All Folders');
+    _defaultAppBar = AppBar(
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: false,
+      leadingWidth: 60.0,
+      leading: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () {
+              showProfileAlertDialog();
+            },
+            child: Container(
+              height: kToolbarHeight * 0.80,
+              width: kToolbarHeight * 0.80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: ColorThemes.primaryDarkColor,
+                borderRadius: BorderRadius.circular(60.0),
+              ),
+              child: SkywaText(
+                text: initialLetter,
+                fontSize: 25.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      title: SkywaTextFormField.text(
+        textEditingController: _folderSearchController,
+        labelText: '',
+        hintText: '',
+        contentPadding: EdgeInsets.all(14.0),
+        suffixIcon: _folderSearchController.text.isNotEmpty
+            ? IconButton(
+                onPressed: () {
+                  setState(() {
+                    _folderSearchController.clear();
+                    isSearching = false;
+                  });
+                },
+                icon: Icon(Icons.close_rounded, color: Colors.black),
+              )
+            : null,
+        onChanged: (String _searchText) {
+          // print(_searchText);
+          if (_folderSearchController.text.isNotEmpty) {
+            setState(() {
+              isSearching = true;
+            });
+          } else {
+            setState(() {
+              isSearching = false;
+            });
+          }
+          searchedFolders = Search.folderSearch(
+            searchText: _folderSearchController.text,
+            folders: folders,
+          );
+          setState(() {});
+          // searchedFolders.forEach((element) {
+          //   print(element.folderName);
+          // });
+        },
+        maxLines: 1,
+      ),
+      actions: [
+        /// logout
+        IconButton(
+          padding: EdgeInsets.all(0.0),
+          onPressed: () {
+            _firebaseAuth.signOut();
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.logout_rounded, color: Colors.black),
+        ),
+      ],
+    );
     _selectedAppBar = SkywaAppBar(
+      // TODO: Change appbar color to white
       appbarText: '${_selectedFoldersIndex.length}',
       centerTitle: false,
       backIconButton: IconButton(
@@ -300,6 +637,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                                       folders[_selectedFoldersIndex[i]]);
                             }
                             _selectedFoldersIndex.clear();
+                            refreshViewAllFolders();
                           },
                         ),
                       ],
@@ -326,6 +664,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
         return Future.value(false);
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child:
@@ -334,159 +673,11 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
         body: isLoading
             ? folderShimmer()
             : folders.isNotEmpty
-                ? Container(
-                    height: Device.screenHeight,
-                    width: Device.screenWidth,
-                    child: Stack(
-                      children: [
-                        GridView.builder(
-                          shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 1.10,
-                            crossAxisCount: 2,
-                          ),
-                          itemCount: folders.length,
-                          itemBuilder:
-                              (BuildContext gridViewContext, int index) {
-                            FolderModel folderModel = folders[index];
-                            return GestureDetector(
-                              onLongPress: () {
-                                setState(() {
-                                  _changeSelection(enabled: true, index: index);
-                                });
-                              },
-                              onTap: () {
-                                setState(() {
-                                  if (_selectedFoldersIndex.contains(index)) {
-                                    _selectedFoldersIndex.remove(index);
-                                  } else if (_selectedFoldersIndex.isEmpty) {
-                                    if (folderModel.questions.isEmpty) {
-                                      Navigator.push(
-                                        context,
-                                        PageTransition(
-                                          child: ViewAllQuestionsScreen(
-                                            folderModel: folderModel,
-                                            refreshViewAllFolders:
-                                                refreshViewAllFolders,
-                                          ),
-                                          type:
-                                              PageTransitionType.rippleRightUp,
-                                        ),
-                                      );
-                                    } else {
-                                      SkywaBottomSheet(
-                                        context: gridViewContext,
-                                        content: Container(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: ListView(
-                                            shrinkWrap: true,
-                                            children: [
-                                              /// view notes
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    PageTransition(
-                                                      child: ViewAllNotesScreen(
-                                                        folderModel:
-                                                            folderModel,
-                                                        refreshViewAllFolders:
-                                                            refreshViewAllFolders,
-                                                      ),
-                                                      type: PageTransitionType
-                                                          .rippleRightUp,
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  child: SkywaText(
-                                                      text: 'View Notes'),
-                                                ),
-                                              ),
+                ? buildFolderGridView()
+                :
 
-                                              /// view questions
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    PageTransition(
-                                                      child:
-                                                          ViewAllQuestionsScreen(
-                                                        folderModel:
-                                                            folderModel,
-                                                        refreshViewAllFolders:
-                                                            refreshViewAllFolders,
-                                                      ),
-                                                      type: PageTransitionType
-                                                          .rippleRightUp,
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  child: SkywaText(
-                                                      text: 'View Questions'),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  } else {
-                                    _selectedFoldersIndex.add(index);
-                                  }
-                                  print(_selectedFoldersIndex);
-                                });
-                              },
-                              child: Stack(
-                                children: [
-                                  FolderWidget(folderModel: folderModel),
-                                  if (_selectedFoldersIndex.contains(index))
-                                    const Positioned(
-                                      left: 20.0,
-                                      top: 30.0,
-                                      child: Icon(
-                                        Icons.check_box_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  else if (_selectedFoldersIndex.isNotEmpty &&
-                                      !_selectedFoldersIndex.contains(index))
-                                    const Positioned(
-                                      left: 20.0,
-                                      top: 30.0,
-                                      child: Icon(
-                                        Icons.check_box_outline_blank_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        Positioned(
-                          bottom: 10.0,
-                          right: 10.0,
-                          child: SkywaFloatingActionButton(
-                            iconData: AntDesign.addfolder,
-                            iconSize: 20.0,
-                            onTap: () {
-                              showAlertDialog();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : SizedBox(
+                /// add very first folder
+                SizedBox(
                     width: Device.screenWidth,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -495,7 +686,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                           iconData: AntDesign.addfolder,
                           iconSize: 20.0,
                           onTap: () {
-                            showAlertDialog();
+                            showAddFolderAlertDialog();
                           },
                         ),
                         const SizedBox(height: 10.0),
@@ -507,184 +698,6 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                       ],
                     ),
                   ),
-        /*body: Container(
-          height: Device.screenHeight,
-          child: StreamBuilder(
-              stream: _folderReference
-                  .orderBy('folderCreationDate', descending: false)
-                  .snapshots(),
-              builder: (BuildContext buildContext, AsyncSnapshot snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Stack(
-                    children: [
-                      Container(),
-
-                      /// loading
-                      Positioned(
-                        top: 0.0,
-                        bottom: 0.0,
-                        left: 0.0,
-                        right: 0.0,
-                        child: folderShimmer(),
-                      ),
-                    ],
-                  );
-                }
-                _folders = snapshot.data.docs.map((question) {
-                  return FolderModel.fromJson(question);
-                }).toList();
-                return _folders.isNotEmpty
-                    ? Stack(
-                        children: [
-                          GridView.builder(
-                            shrinkWrap: true,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              childAspectRatio: 1.10,
-                              crossAxisCount: 2,
-                            ),
-                            itemCount: _folders.length,
-                            itemBuilder:
-                                (BuildContext gridViewContext, int index) {
-                              FolderModel folderModel = _folders[index];
-                              return GestureDetector(
-                                onLongPress: () {
-                                  setState(() {
-                                    _changeSelection(
-                                        enabled: true, index: index);
-                                  });
-                                },
-                                onTap: () {
-                                  setState(() {
-                                    if (_selectedFoldersIndex.contains(index)) {
-                                      _selectedFoldersIndex.remove(index);
-                                    } else if (_selectedFoldersIndex.isEmpty) {
-                                      SkywaBottomSheet(
-                                        context: gridViewContext,
-                                        content: Container(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: ListView(
-                                            shrinkWrap: true,
-                                            children: [
-                                              /// view notes
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    PageTransition(
-                                                      child: ViewAllNotes(
-                                                          folderModel:
-                                                              folderModel),
-                                                      type: PageTransitionType
-                                                          .rippleRightUp,
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  child: SkywaText(
-                                                      text: 'View Notes'),
-                                                ),
-                                              ),
-
-                                              /// view questions
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    PageTransition(
-                                                      child:
-                                                          ViewAllQuestionsScreen(
-                                                              folderModel:
-                                                                  folderModel),
-                                                      type: PageTransitionType
-                                                          .rippleRightUp,
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  child: SkywaText(
-                                                      text: 'View Questions'),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      _selectedFoldersIndex.add(index);
-                                    }
-                                    print(_selectedFoldersIndex);
-                                  });
-                                },
-                                child: Stack(
-                                  children: [
-                                    FolderWidget(folderModel: folderModel),
-                                    if (_selectedFoldersIndex.contains(index))
-                                      const Positioned(
-                                        left: 20.0,
-                                        top: 30.0,
-                                        child: Icon(
-                                          Icons.check_box_rounded,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    else if (_selectedFoldersIndex.isNotEmpty &&
-                                        !_selectedFoldersIndex.contains(index))
-                                      const Positioned(
-                                        left: 20.0,
-                                        top: 30.0,
-                                        child: Icon(
-                                          Icons.check_box_outline_blank_rounded,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          Positioned(
-                            bottom: 10.0,
-                            right: 10.0,
-                            child: SkywaFloatingActionButton(
-                              iconData: AntDesign.addfolder,
-                              iconSize: 20.0,
-                              onTap: () {
-                                showAlertDialog();
-                              },
-                            ),
-                          ),
-                        ],
-                      )
-                    : SizedBox(
-                        width: Device.screenWidth,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SkywaFloatingActionButton(
-                              iconData: AntDesign.addfolder,
-                              iconSize: 20.0,
-                              onTap: () {
-                                showAlertDialog();
-                              },
-                            ),
-                            const SizedBox(height: 10.0),
-                            SkywaText(
-                              text: 'Add New Folder',
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ],
-                        ),
-                      );
-              }),
-        ),*/
       ),
     );
   }

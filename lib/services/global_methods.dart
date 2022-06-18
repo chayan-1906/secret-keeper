@@ -1,7 +1,15 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:nanoid/nanoid.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'is_string_invalid.dart';
 
 class GlobalMethods {
   static Future<void> customDialog(BuildContext context, String title,
@@ -202,8 +210,69 @@ class GlobalMethods {
     );
   }
 
+  static String getInitialLetter({@required String text}) {
+    String initialLetter = '';
+    if (text.isNotEmpty) {
+      initialLetter = text.substring(0, 1);
+    }
+    return initialLetter;
+  }
+
   static String generateUniqueId() {
     String id = nanoid(20);
     return id;
+  }
+
+  static String getFilenameFromUrl({@required String url}) {
+    String _filename = '';
+    if (!isStringInvalid(text: url)) {
+      _filename = url
+          .split('%2Ffiles%2F')[1]
+          .replaceAll('%20', ' ')
+          .split('?alt=media&token=')[0];
+    }
+    return _filename;
+  }
+
+  static Future<void> downloadAndOpenFile({@required String url}) async {
+    String fileName = getFilenameFromUrl(url: url);
+    final directory = await getExternalStorageDirectory();
+    File saveFileName = File('${directory.path}/${fileName}');
+    await Dio().download(
+      url,
+      saveFileName.path,
+      onReceiveProgress: (received, total) {
+        if (total != -1) {
+          print((received / total * 100).toStringAsFixed(0) + '%');
+        }
+      },
+    );
+    await OpenFile.open(saveFileName.path);
+  }
+
+  static Icon getFileIcon({String fileName, String url}) {
+    Icon icon;
+    if (isStringInvalid(text: fileName) && !isStringInvalid(text: url)) {
+      fileName = getFilenameFromUrl(url: url);
+    }
+    if (fileName.contains('pdf')) {
+      icon = Icon(
+        MaterialIcons.picture_as_pdf,
+        color: CupertinoColors.systemRed,
+      );
+    } else if (fileName.contains('doc') || fileName.contains('docx')) {
+      icon = Icon(
+        MaterialCommunityIcons.file_document_box,
+        size: 30.0,
+        color: Color(0xFF4285F4),
+      );
+    } else if (fileName.contains('xls') || fileName.contains('xlsx')) {
+      icon = Icon(
+        MaterialCommunityIcons.file_excel_box,
+        size: 30.0,
+        color: Color(0xFF34A853),
+      );
+    }
+    return icon;
   }
 }

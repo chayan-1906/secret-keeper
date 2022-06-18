@@ -43,11 +43,11 @@ class _MyAppState extends State<MyApp> {
                 centerTitle: true,
                 elevation: 0.0,
                 backgroundColor: ColorThemes.primaryColor,
-                shape: RoundedRectangleBorder(
+                /*shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
                     bottomRight: Radius.circular(Device.screenHeight * 0.02),
                   ),
-                ),
+                ),*/
               ),
             ),
             home: const SplashScreen(),
