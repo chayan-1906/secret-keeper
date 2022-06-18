@@ -11,6 +11,7 @@ import 'package:diary_app/framework/widgets/skywa_switch.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
 import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/models/note_model.dart';
+import 'package:diary_app/screens/image_view_screen.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
 import 'package:diary_app/services/is_string_invalid.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 
@@ -586,50 +588,69 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
               },
             )
           else
-            GestureDetector(
-              onTap: () {
-                /// show modal bottom sheet for image picker
-                SkywaBottomSheet(
-                  context: context,
-                  contentPadding: EdgeInsets.all(8.0),
-                  content: Container(
-                    // color: Colors.redAccent,
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        /// camera
-                        ListTile(
-                          leading: Icon(Icons.camera_alt_rounded),
-                          title: SkywaText(text: 'Camera'),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            pickImage(
-                              imageSource: ImageSource.camera,
-                              pickedImageFile: pickedImageFile,
-                              questionId: questionId,
-                            );
-                          },
+            Column(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageTransition(
+                        child: ImageViewScreen(
+                          imageUrl: qIdTextEditingController[questionId].text,
                         ),
+                        type: PageTransitionType.rippleRightUp,
+                      ),
+                    );
+                  },
+                  child:
+                      Image.network(qIdTextEditingController[questionId].text),
+                ),
+                SkywaButton.save(
+                  text: 'Pick Image',
+                  onTap: () {
+                    /// show modal bottom sheet for image picker
+                    SkywaBottomSheet(
+                      context: context,
+                      contentPadding: EdgeInsets.all(8.0),
+                      content: Container(
+                        // color: Colors.redAccent,
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            /// camera
+                            ListTile(
+                              leading: Icon(Icons.camera_alt_rounded),
+                              title: SkywaText(text: 'Camera'),
+                              onTap: () async {
+                                Navigator.pop(context);
+                                pickImage(
+                                  imageSource: ImageSource.camera,
+                                  pickedImageFile: pickedImageFile,
+                                  questionId: questionId,
+                                );
+                              },
+                            ),
 
-                        /// gallery
-                        ListTile(
-                          leading: Icon(Icons.image_rounded),
-                          title: SkywaText(text: 'Gallery'),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            pickImage(
-                              imageSource: ImageSource.gallery,
-                              pickedImageFile: pickedImageFile,
-                              questionId: questionId,
-                            );
-                          },
+                            /// gallery
+                            ListTile(
+                              leading: Icon(Icons.image_rounded),
+                              title: SkywaText(text: 'Gallery'),
+                              onTap: () async {
+                                Navigator.pop(context);
+                                pickImage(
+                                  imageSource: ImageSource.gallery,
+                                  pickedImageFile: pickedImageFile,
+                                  questionId: questionId,
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              child: Image.network(qIdTextEditingController[questionId].text),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
         ],
       );
@@ -664,34 +685,43 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
               },
             )
           else
-            ListTile(
-              onTap: () async {
-                /*pickFile(pickedFile: pickedFile, questionId: questionId);*/
-                setState(() {
-                  isLoading = true;
-                });
-                GlobalMethods.downloadAndOpenFile(
-                        url: qIdTextEditingController[questionId].text)
-                    .then((value) {
-                  if (mounted) {
+            Column(
+              children: [
+                ListTile(
+                  onTap: () async {
                     setState(() {
-                      isLoading = false;
+                      isLoading = true;
                     });
-                  }
-                });
-                // print(qIdTextEditingController[questionId].text);
-                // print(qIdTextEditingController[questionId]
-                //     .text
-                //     .split('%2Ffiles%2F')[1]
-                //     .replaceAll('%20', ' ')
-                //     .split('?alt=media&token=')[0]);
-              },
-              leading: fileIcon,
-              title: SkywaText(
-                text: GlobalMethods.getFilenameFromUrl(
-                    url: qIdTextEditingController[questionId].text),
-                maxLines: 3,
-              ),
+                    GlobalMethods.downloadAndOpenFile(
+                            url: qIdTextEditingController[questionId].text)
+                        .then((value) {
+                      if (mounted) {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
+                    });
+                    // print(qIdTextEditingController[questionId].text);
+                    // print(qIdTextEditingController[questionId]
+                    //     .text
+                    //     .split('%2Ffiles%2F')[1]
+                    //     .replaceAll('%20', ' ')
+                    //     .split('?alt=media&token=')[0]);
+                  },
+                  leading: fileIcon,
+                  title: SkywaText(
+                    text: GlobalMethods.getFilenameFromUrl(
+                        url: qIdTextEditingController[questionId].text),
+                    maxLines: 3,
+                  ),
+                ),
+                SkywaButton.save(
+                  text: 'Pick File',
+                  onTap: () {
+                    pickFile(pickedFile: pickedFile, questionId: questionId);
+                  },
+                )
+              ],
             ),
         ],
       );
@@ -920,10 +950,12 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
           if (uploadProgress == 100.0) {
             downloadUrl = await event.ref.getDownloadURL();
             print('downloadUrl: $downloadUrl');
-            setState(() {
-              isLoading = false;
-              qIdTextEditingController[questionId].text = downloadUrl;
-            });
+            if (mounted) {
+              setState(() {
+                isLoading = false;
+                qIdTextEditingController[questionId].text = downloadUrl;
+              });
+            }
           }
         });
       } else {
