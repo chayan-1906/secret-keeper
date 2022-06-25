@@ -38,7 +38,7 @@ class AddQuestionScreen extends StatefulWidget {
 class _AddQuestionScreenState extends State<AddQuestionScreen> {
   FolderModel folderModel;
   QuestionModel questionModel;
-  TextEditingController _questionController = TextEditingController();
+  TextEditingController _questionTextController = TextEditingController();
   TextEditingController _questionTypeController = TextEditingController();
   TextEditingController _questionTypeAnswerController = TextEditingController();
   List<dynamic> questions = [];
@@ -61,6 +61,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     'File', // 14
   ];
   bool isLoading = false;
+  bool allowPop = true;
 
   Widget buildQuestionTypeAnswerWidget() {
     print(_questionTypeController.text);
@@ -154,7 +155,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   Future<void> saveQuestion() async {
-    if (_questionController.text.isEmpty) {
+    if (_questionTextController.text.isEmpty) {
       SkywaSnackBar.error(
         context: context,
         snackbarText: 'Question is required',
@@ -216,7 +217,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         );*/
         Map<String, dynamic> questionToBeAdded = {
           'questionId': questionId,
-          'questionText': _questionController.text,
+          'questionText': _questionTextController.text,
           'isRequired': isRequired,
           'questionCreationDate': questionCreationDate,
           'questionType': _questionTypeController.text,
@@ -243,7 +244,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   Future<void> editQuestion() async {
-    if (_questionController.text.isEmpty) {
+    if (_questionTextController.text.isEmpty) {
       SkywaSnackBar.error(
         context: context,
         snackbarText: 'Question is required',
@@ -295,7 +296,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         });
         Map<String, dynamic> questionToBeEdited = {
           'questionId': questionModel.questionId,
-          'questionText': _questionController.text,
+          'questionText': _questionTextController.text,
           'isRequired': isRequired,
           'questionCreationDate': questionModel.questionCreationDate,
           'questionType': _questionTypeController.text,
@@ -401,18 +402,48 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   void populateFields() {
-    _questionController =
+    _questionTextController =
         TextEditingController(text: questionModel.questionText);
     isRequired = questionModel.isRequired;
     _questionTypeController =
         TextEditingController(text: questionModel.questionType);
     String answers = '';
     for (int i = 0; i < questionModel.questionTypeAnswer.length; i++) {
-      print('quesTypeAns: ${questionModel.questionTypeAnswer[i]}');
+      // print('quesTypeAns: ${questionModel.questionTypeAnswer[i]}');
       answers = answers +
           questionModel.questionTypeAnswer[i] +
           (i == questionModel.questionTypeAnswer.length - 1 ? '' : '\n');
       _questionTypeAnswerController = TextEditingController(text: answers);
+    }
+  }
+
+  bool allowScreenPop() {
+    if (questionModel == null) {
+      /// new question
+      if (_questionTextController.text.isNotEmpty ||
+          isRequired ||
+          _questionTypeController.text.isNotEmpty ||
+          _questionTypeAnswerController.text.isNotEmpty)
+        return false;
+      else
+        return true;
+    } else {
+      /// edit question
+      if (questionModel.questionText != _questionTextController.text ||
+          questionModel.isRequired != isRequired ||
+          questionModel.questionType != _questionTypeController.text) {
+        /// check question text, isRequired & question type
+        return false;
+      } else {
+        /// check question type answer
+        print('450: ${questionModel.questionTypeAnswer}');
+        print('451: ${_questionTypeAnswerController.text.split('\n')}');
+        if (questionModel.questionTypeAnswer.toString() !=
+            _questionTypeAnswerController.text.split('\n').toString())
+          return false;
+        else
+          return true;
+      }
     }
   }
 
@@ -430,10 +461,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        if (_questionController.text.isNotEmpty ||
-            isRequired ||
-            _questionTypeController.text.isNotEmpty ||
-            _questionTypeAnswerController.text.isNotEmpty)
+        allowPop = allowScreenPop();
+        if (!allowPop)
           showPopAlertDialog();
         else
           Navigator.pop(context);
@@ -446,10 +475,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             appbarText: 'Add Question',
             backIconButton: IconButton(
               onPressed: () {
-                if (_questionController.text.isNotEmpty ||
-                    isRequired ||
-                    _questionTypeController.text.isNotEmpty ||
-                    _questionTypeAnswerController.text.isNotEmpty)
+                allowPop = allowScreenPop();
+                if (!allowPop)
                   showPopAlertDialog();
                 else
                   Navigator.pop(context);
@@ -457,12 +484,12 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
             ),
             actions: [
-              if (_questionController.text.isNotEmpty &&
+              if (_questionTextController.text.isNotEmpty &&
                   _questionTypeController.text.isNotEmpty)
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      _questionController;
+                      _questionTextController;
                     });
                     if (questionModel == null) // when adding question
                       saveQuestion();
@@ -494,19 +521,19 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 children: [
                   /// multiline textformfield
                   SkywaTextFormField.multiline(
-                    textEditingController: _questionController,
+                    textEditingController: _questionTextController,
                     labelText: 'Question',
                     hintText: 'Enter your question',
                     onChanged: (value) {
                       setState(() {
-                        _questionController;
+                        _questionTextController;
                       });
                     },
-                    suffixIcon: _questionController.text.isNotEmpty
+                    suffixIcon: _questionTextController.text.isNotEmpty
                         ? IconButton(
                             onPressed: () {
                               setState(() {
-                                _questionController.clear();
+                                _questionTextController.clear();
                               });
                             },
                             icon: const Icon(

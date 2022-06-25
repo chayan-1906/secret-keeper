@@ -67,7 +67,8 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
   List<dynamic> dbNotesList = [];
   bool isLoading = false;
   double uploadProgress = 0.0;
-  // String initialNoteAsString;
+  List prevAnswers = [];
+  List currentAnswers = [];
   bool allowPop = true;
 
   Widget buildNotesAnswerWidget({
@@ -1005,6 +1006,36 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     }
   }
 
+  bool allowScreenPop() {
+    if (widget.noteIndex == null) {
+      /// new note
+      qIdTextEditingController.entries.forEach((element) {
+        if (element.value.text.isNotEmpty) allowPop = false;
+        return false;
+      });
+    } else {
+      /// edit note
+      prevAnswers.clear();
+      noteModel.noteAnswer.forEach((key, value) {
+        prevAnswers.add(value);
+      });
+      currentAnswers.clear();
+      qIdTextEditingController.values.forEach((value) {
+        currentAnswers.add(value.text);
+      });
+      print(prevAnswers.toString());
+      print(currentAnswers.toString());
+      if (prevAnswers.toString() != currentAnswers.toString()) {
+        /// something changed
+        allowPop = false;
+      } else {
+        /// nothing changed
+        allowPop = true;
+      }
+    }
+    return allowPop;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -1025,27 +1056,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     noteModel = widget.noteModel;
     noteIndexToBeEdited = widget.noteIndex;
     if (noteModel != null) populateFields();
-    // initialNoteAsString = noteModel.toString();
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        qIdTextEditingController.entries.forEach((element) {
-          if (element.value.text.isNotEmpty)
-            allowPop = false;
-          else {
-            // for new note with empty answer --> allowPop true
-            allowPop = true;
-          }
-        });
-        // print(dbNotesList[noteIndexToBeEdited]['noteAnswer'].toString());
-
-        // if (dbNotesList[noteIndexToBeEdited]['noteAnswer'].toString() !=
-        //     noteModel.noteAnswer.toString()) {
-        //   allowPop = false;
-        // }
+        allowPop = allowScreenPop();
         print('allowPop: $allowPop');
         if (!allowPop)
           showPopAlertDialog(context: context);
@@ -1060,9 +1077,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
             appbarText: 'Add Notes',
             backIconButton: IconButton(
               onPressed: () {
-                qIdTextEditingController.entries.forEach((element) {
-                  if (element.value.text.isNotEmpty) allowPop = false;
-                });
+                allowPop = allowScreenPop();
                 if (!allowPop)
                   showPopAlertDialog(context: context);
                 else
@@ -1151,7 +1166,25 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                             // new note
                           } else {
                             // edit note
-                            print('1054: ${dbNotesList[widget.noteIndex]}');
+                            // print('1154: ${noteModel.noteAnswer}');
+                            prevAnswers.clear();
+                            noteModel.noteAnswer.forEach((key, value) {
+                              prevAnswers.add(value);
+                            });
+                            currentAnswers.clear();
+                            qIdTextEditingController.values.forEach((value) {
+                              currentAnswers.add(value.text);
+                            });
+                            print(prevAnswers.toString());
+                            print(currentAnswers.toString());
+                            if (prevAnswers.toString() !=
+                                currentAnswers.toString()) {
+                              /// something changed
+                              allowPop = false;
+                            } else {
+                              /// nothing changed
+                              allowPop = true;
+                            }
                           }
                         },
                         child: Text('Check'),
