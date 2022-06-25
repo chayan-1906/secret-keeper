@@ -1,16 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:diary_app/framework/widgets/skywa_alert_dialog.dart';
+/*import 'package:diary_app/framework/widgets/skywa_alert_dialog.dart';
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
-import 'package:diary_app/framework/widgets/skywa_bottom_sheet.dart';
 import 'package:diary_app/framework/widgets/skywa_elevated_button.dart';
 import 'package:diary_app/framework/widgets/skywa_floating_action_button.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
-import 'package:diary_app/framework/widgets/skywa_textformfield.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/question_model.dart';
 import 'package:diary_app/screens/add_question_screen.dart';
-import 'package:diary_app/services/global_methods.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
@@ -18,7 +13,6 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../framework/widgets/skywa_radio_group.dart';
 import '../services/color_themes.dart';
 import '../widgets/question_row_widget.dart';
 import 'view_all_folders_screen.dart';
@@ -255,3 +249,4 @@ class _ViewAllQuestionsScreenState extends State<ViewAllQuestionsScreen> {
     );
   }
 }
+*/

@@ -1,6 +1,7 @@
 import 'package:diary_app/framework/widgets/skywa_alert_dialog.dart';
 import 'package:diary_app/framework/widgets/skywa_appbar.dart';
 import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
+import 'package:diary_app/framework/widgets/skywa_outlined_button.dart';
 import 'package:diary_app/framework/widgets/skywa_snackbar.dart';
 import 'package:diary_app/models/question_model.dart';
 import 'package:diary_app/screens/view_all_folders_screen.dart';
@@ -352,19 +353,41 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           // shrinkWrap: true,
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SkywaText(text: 'Do you want to discard?'),
+            SkywaText(
+              text: 'Do you want to discard?',
+              color: Colors.black.withOpacity(0.60),
+              fontWeight: FontWeight.w500,
+            ),
             SizedBox(height: 25.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SkywaElevatedButton.info(
-                    text: 'No',
+                /*/// no
+                SkywaTextButton(
+                  text: 'No',
+                  buttonColor: Colors.white,
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(width: 10.0),
+
+                /// yes
+                SkywaTextButton(
+                  text: 'Yes',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),*/
+                SkywaOutlinedButton(
+                    text: 'NO',
                     onTap: () {
                       Navigator.pop(context);
                     }),
                 SizedBox(width: 10.0),
-                SkywaElevatedButton.info(
-                    text: 'Yes',
+                SkywaElevatedButton.save(
+                    text: 'YES',
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -431,7 +454,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 else
                   Navigator.pop(context);
               },
-              icon: Icon(Icons.arrow_back_ios_rounded),
+              icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
             ),
             actions: [
               if (_questionController.text.isNotEmpty &&

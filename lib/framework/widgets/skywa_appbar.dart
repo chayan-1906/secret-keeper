@@ -27,7 +27,7 @@ class SkywaAppBar extends StatelessWidget {
     print(Navigator.canPop(context));
     if (backIconButton == null && Navigator.canPop(context)) {
       backIconButton = IconButton(
-        icon: const Icon(Icons.arrow_back_ios_rounded),
+        icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
         onPressed: () {
           Navigator.pop(context);
         },

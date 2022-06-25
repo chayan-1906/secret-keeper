@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:diary_app/framework/widgets/skywa_elevated_button.dart';
 import 'package:diary_app/framework/widgets/skywa_rich_text.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
-import 'package:diary_app/framework/widgets/skywa_text_button.dart';
 import 'package:diary_app/generated/assets.dart';
 import 'package:diary_app/widgets/glassmorphic_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +13,6 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import '../../framework/widgets/skywa_textformfield.dart';
 import '../../services/color_themes.dart';
 import '../../services/global_methods.dart';
-import '../../widgets/loading_widget.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 
@@ -216,6 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           textEditingController: _passwordController,
                           labelText: 'Password',
                           hintText: 'Enter your password',
+                          isObscure: true,
                           onChanged: (value) {
                             setState(() {
                               _passwordController;

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
+import 'package:diary_app/framework/widgets/skywa_outlined_button.dart';
 import 'package:diary_app/models/folder_model.dart';
 import 'package:diary_app/models/note_model.dart';
 import 'package:diary_app/models/question_model.dart';
@@ -129,7 +130,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
 
   void showAddFolderAlertDialog(
       {FolderModel folderModel, String mode = 'add'}) {
-    SkywaAlertDialog.success(
+    SkywaAlertDialog.info(
       context: context,
       titleText: 'Add New Label',
       titlePadding: EdgeInsets.only(
@@ -138,7 +139,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
         left: Device.screenWidth * 0.05,
         right: Device.screenWidth * 0.05,
       ),
-      fontSize: 22.0,
+      fontSize: 20.0,
       content: Container(
         width: Device.screenWidth,
         constraints: BoxConstraints(
@@ -211,56 +212,53 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
     SkywaAlertDialog.info(
       context: context,
       fontSize: 22.0,
-      content: Container(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          // shrinkWrap: true,
-          children: [
-            /// image
-            Container(
-              height: 120.0,
-              width: 120.0,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: ColorThemes.primaryDarkColor,
-                borderRadius: BorderRadius.circular(450.0),
-              ),
-              child: SkywaText(
-                text: initialLetter,
-                fontSize: 80.0,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+      content: Column(
+        // shrinkWrap: true,
+        children: [
+          /// image
+          Container(
+            height: 120.0,
+            width: 120.0,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: ColorThemes.primaryDarkColor,
+              borderRadius: BorderRadius.circular(450.0),
             ),
-            SizedBox(height: 10.0),
+            child: SkywaText(
+              text: initialLetter,
+              fontSize: 80.0,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 10.0),
 
-            /// display name
-            SkywaText(
-              text: userName,
-              fontSize: 30.0,
-              fontWeight: FontWeight.w700,
-            ),
-            SizedBox(height: 5.0),
+          /// display name
+          SkywaText(
+            text: userName,
+            fontSize: 30.0,
+            fontWeight: FontWeight.w700,
+          ),
+          SizedBox(height: 5.0),
 
-            /// email
-            SkywaAutoSizeText(
-              text: firebaseUser.email,
-              textAlign: TextAlign.end,
-              fontWeight: FontWeight.w500,
-              textStyle: TextStyle(fontSize: 20.0),
-            ),
-            SizedBox(height: 5.0),
+          /// email
+          SkywaAutoSizeText(
+            text: firebaseUser.email,
+            textAlign: TextAlign.end,
+            fontWeight: FontWeight.w500,
+            textStyle: TextStyle(fontSize: 17.0),
+          ),
+          SizedBox(height: 5.0),
 
-            /// last sign in at
-            SkywaAutoSizeText(
-              text:
-                  'Last signed in: ${firebaseUser.metadata.lastSignInTime.toString().substring(0, 16)}',
-              maxLines: 1,
-              textAlign: TextAlign.center,
-              fontWeight: FontWeight.w500,
-            ),
-          ],
-        ),
+          /// last sign in at
+          SkywaAutoSizeText(
+            text:
+                'Last signed in: ${firebaseUser.metadata.lastSignInTime.toString().substring(0, 16)}',
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            fontWeight: FontWeight.w500,
+          ),
+        ],
       ),
     );
   }
@@ -311,10 +309,12 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
   }
 
   Future<void> refreshViewAllFolders() async {
-    setState(() {
-      isLoading = true;
-    });
-    fetchAllFolders();
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+      fetchAllFolders();
+    }
   }
 
   Widget buildFolderGridView() {
@@ -350,9 +350,10 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
                         Navigator.push(
                           context,
                           PageTransition(
-                            child: ViewAllQuestionsScreen(
+                            child: NotesQuestionTabBarScreen(
                               folderModel: folderModel,
                               refreshViewAllFolders: refreshViewAllFolders,
+                              tabIndex: 1,
                             ),
                             type: PageTransitionType.rippleRightUp,
                           ),
@@ -504,19 +505,25 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
           // shrinkWrap: true,
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SkywaText(text: 'Do you want to logout?'),
+            SkywaText(
+              text: 'Do you want to logout?',
+              color: Colors.black.withOpacity(0.60),
+              fontWeight: FontWeight.w500,
+            ),
             SizedBox(height: 25.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SkywaElevatedButton.info(
-                    text: 'No',
+                // TODO: After making SkywaOutlinedButton make No button with that widget
+                SkywaOutlinedButton(
+                    text: 'NO',
+                    textColor: Colors.black,
                     onTap: () {
                       Navigator.pop(context);
                     }),
                 SizedBox(width: 10.0),
-                SkywaElevatedButton.info(
-                    text: 'Yes',
+                SkywaElevatedButton.save(
+                    text: 'YES',
                     onTap: () {
                       _firebaseAuth.signOut();
                       Navigator.pushReplacement(
@@ -659,7 +666,7 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
             _selectedFoldersIndex.clear();
           });
         },
-        icon: const Icon(Icons.close_rounded),
+        icon: const Icon(Icons.close_rounded, color: Colors.white),
       ),
       actions: [
         IconButton(
@@ -729,9 +736,9 @@ class _ViewAllFolderScreenState extends State<ViewAllFolderScreen> {
             _selectedFoldersIndex.clear();
           });
         } else {
-          Navigator.pop(context);
+          Navigator.canPop(context) ? Navigator.pop(context) : null;
         }
-        return Future.value(false);
+        return Future.value(true);
       },
       child: Scaffold(
         backgroundColor: Colors.white,

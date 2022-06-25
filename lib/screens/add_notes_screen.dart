@@ -6,6 +6,7 @@ import 'package:diary_app/framework/widgets/skywa_cached_network_image.dart';
 import 'package:diary_app/framework/widgets/skywa_choice_chip_group.dart';
 import 'package:diary_app/framework/widgets/skywa_date_time_picker.dart';
 import 'package:diary_app/framework/widgets/skywa_dropdown_button.dart';
+import 'package:diary_app/framework/widgets/skywa_outlined_button.dart';
 import 'package:diary_app/framework/widgets/skywa_slider.dart';
 import 'package:diary_app/framework/widgets/skywa_snackbar.dart';
 import 'package:diary_app/framework/widgets/skywa_switch.dart';
@@ -38,14 +39,14 @@ class AddNotesScreen extends StatefulWidget {
   final FolderModel folderModel;
   final Function fetchAllNotes;
   final NoteModel noteModel;
-  final int index;
+  final int noteIndex;
 
   const AddNotesScreen({
     Key key,
     @required this.folderModel,
     @required this.fetchAllNotes,
     this.noteModel,
-    this.index,
+    this.noteIndex,
   }) : super(key: key);
 
   @override
@@ -66,32 +67,13 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
   List<dynamic> dbNotesList = [];
   bool isLoading = false;
   double uploadProgress = 0.0;
+  // String initialNoteAsString;
   bool allowPop = true;
 
-  /*void showLoadingAlertDialog({@required BuildContext context}) {
-    showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (_) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircularProgressIndicator(color: ColorThemes.primaryColor),
-                  SizedBox(height: 15.0),
-                  Text('Please wait...')
-                ],
-              ),
-            ),
-          );
-        });
-  }*/
-
-  Widget buildNotesAnswerWidget(
-      {@required BuildContext context, @required int index}) {
+  Widget buildNotesAnswerWidget({
+    @required BuildContext context,
+    @required int index,
+  }) {
     uploadProgress = 0.0;
     String questionType = questions[index]['questionType'];
     String questionText = questions[index]['questionText'];
@@ -900,19 +882,24 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
           // shrinkWrap: true,
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SkywaText(text: 'Do you want to discard?'),
+            SkywaText(
+              text: 'Do you want to discard?',
+              color: Colors.black.withOpacity(0.60),
+              fontWeight: FontWeight.w500,
+            ),
             SizedBox(height: 25.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SkywaElevatedButton.info(
-                    text: 'No',
+                SkywaOutlinedButton(
+                    text: 'NO',
+                    textColor: Colors.black,
                     onTap: () {
                       Navigator.pop(context);
                     }),
                 SizedBox(width: 10.0),
-                SkywaElevatedButton.info(
-                    text: 'Yes',
+                SkywaElevatedButton.save(
+                    text: 'YES',
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -1036,8 +1023,9 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     }
     dbNotesList = folderModel.notes;
     noteModel = widget.noteModel;
-    noteIndexToBeEdited = widget.index;
+    noteIndexToBeEdited = widget.noteIndex;
     if (noteModel != null) populateFields();
+    // initialNoteAsString = noteModel.toString();
   }
 
   @override
@@ -1045,8 +1033,20 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
     return WillPopScope(
       onWillPop: () {
         qIdTextEditingController.entries.forEach((element) {
-          if (element.value.text.isNotEmpty) allowPop = false;
+          if (element.value.text.isNotEmpty)
+            allowPop = false;
+          else {
+            // for new note with empty answer --> allowPop true
+            allowPop = true;
+          }
         });
+        // print(dbNotesList[noteIndexToBeEdited]['noteAnswer'].toString());
+
+        // if (dbNotesList[noteIndexToBeEdited]['noteAnswer'].toString() !=
+        //     noteModel.noteAnswer.toString()) {
+        //   allowPop = false;
+        // }
+        print('allowPop: $allowPop');
         if (!allowPop)
           showPopAlertDialog(context: context);
         else
@@ -1068,7 +1068,7 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                 else
                   Navigator.pop(context);
               },
-              icon: Icon(Icons.arrow_back_ios_new_rounded),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
             ),
             actions: [
               if (qIdTextEditingController.isNotEmpty)
@@ -1145,6 +1145,17 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                         ),
                       buildNotesAnswerWidget(context: context, index: index),
                       const SizedBox(height: 20.0),
+                      TextButton(
+                        onPressed: () {
+                          if (widget.noteIndex == null) {
+                            // new note
+                          } else {
+                            // edit note
+                            print('1054: ${dbNotesList[widget.noteIndex]}');
+                          }
+                        },
+                        child: Text('Check'),
+                      ),
                     ],
                   );
                 },

@@ -1,4 +1,5 @@
 import 'package:diary_app/services/color_themes.dart';
+import 'package:diary_app/services/is_string_invalid.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
@@ -151,15 +152,22 @@ class SkywaAlertDialog {
                     ],
                   ),
 
-                  icon ?? Container(),
-                  Center(
-                    child: SkywaText(
-                      text: titleText,
-                      fontSize: fontSize + 5.0,
-                      fontWeight: FontWeight.w700,
-                      color: color,
+                  /// title
+                  if (!isStringInvalid(text: titleText) || icon != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        icon ?? Container(),
+                        SizedBox(width: 5.0),
+                        SkywaText(
+                          text: titleText,
+                          fontSize: fontSize + 5.0,
+                          fontWeight: FontWeight.w700,
+                          color: color,
+                        ),
+                      ],
                     ),
-                  ),
 
                   /// content
                   content,

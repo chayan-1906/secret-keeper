@@ -19,7 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
   /*UserSettings userSettings = UserSettings();*/
 
   void navigateToUserState() {
-    Navigator.pushReplacementNamed(context, UserState.routeName);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) {
+        return UserState();
+      }),
+    );
   }
 
   /*Future<void> getDeviceID() async {

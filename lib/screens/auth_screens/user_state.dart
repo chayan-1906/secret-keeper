@@ -3,12 +3,9 @@ import 'package:diary_app/widgets/loading_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../landing_screen.dart';
 import '../view_all_folders_screen.dart';
 
 class UserState extends StatelessWidget {
-  static const String routeName = '/user_state';
-
   const UserState({Key key}) : super(key: key);
 
   @override

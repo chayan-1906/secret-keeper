@@ -1,4 +1,5 @@
 import 'package:diary_app/framework/widgets/skywa_auto_size_text.dart';
+import 'package:diary_app/framework/widgets/skywa_rich_text.dart';
 import 'package:diary_app/framework/widgets/skywa_text.dart';
 import 'package:diary_app/generated/assets.dart';
 import 'package:diary_app/models/folder_model.dart';
@@ -28,11 +29,13 @@ import 'add_notes_screen.dart';
 class NotesQuestionTabBarScreen extends StatefulWidget {
   final FolderModel folderModel;
   final Function refreshViewAllFolders;
+  final int tabIndex;
 
   const NotesQuestionTabBarScreen({
     Key key,
     @required this.folderModel,
     @required this.refreshViewAllFolders,
+    this.tabIndex = 0,
   }) : super(key: key);
 
   @override
@@ -160,8 +163,10 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
     });
   }
 
-  Future<void> editNote(
-      {@required NoteModel noteModel, @required int index}) async {
+  Future<void> editNote({
+    @required NoteModel noteModel,
+    @required int index,
+  }) async {
     Navigator.push(
       context,
       PageTransition(
@@ -170,7 +175,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
           folderModel: folderModel,
           fetchAllNotes: fetchAllNotes,
           noteModel: noteModel,
-          index: index,
+          noteIndex: index,
         ),
       ),
     ).then((value) {
@@ -182,146 +187,196 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
   Widget buildNotesList() {
     return isLoading
         ? questionShimmer()
-        : ListView.builder(
-            shrinkWrap: true,
-            physics: BouncingScrollPhysics(),
-            itemCount: isNoteSearching
-                ? searchedNotes.length
-                : folderModel.notes.length,
-            itemBuilder: (BuildContext context, int index) {
-              Map<String, dynamic> _note = {};
-              if (isNoteSearching) {
-                _note = searchedNotes[index];
-              } else {
-                _note = folderModel.notes[index];
-              }
-              // print('82: ${_note}');
-              NoteModel noteModel = NoteModel(
-                noteId: _note['noteId'],
-                noteAnswer: _note['noteAnswer'],
-                noteCreationDate: _note['noteCreationDate'],
-              );
-              // print('45: ${noteModel.noteAnswer}');
-              List answerTexts = [];
-              for (MapEntry noteAnswer in noteModel.noteAnswer.entries) {
-                if (!isStringInvalid(text: noteAnswer.value))
-                  answerTexts.add(noteAnswer.value);
-              }
-              // print('answerTexts: $answerTexts');
-              return Slidable(
-                key: ValueKey(0),
-                direction: Axis.horizontal,
-                closeOnScroll: true,
-                actionPane: const SlidableBehindActionPane(),
-                actionExtentRatio: 0.20,
-                secondaryActions: [
-                  /// delete question
-                  IconButton(
-                    onPressed: () {
-                      SkywaAlertDialog.error(
-                        context: context,
-                        titleText: 'Delete Question',
-                        titlePadding: const EdgeInsets.all(15.0),
-                        icon: const Icon(
-                          Icons.warning_amber_rounded,
-                          color: ColorThemes.errorColor,
-                          size: 45.0,
+        : folderModel.questions.isEmpty
+            ? Container(
+                alignment: Alignment.center,
+                child: SkywaText(
+                  text: 'Please add question',
+                  fontSize: 30.0,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black.withOpacity(0.6),
+                ),
+              )
+            : folderModel.notes.isEmpty
+                ? Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SkywaText(
+                          text: 'No responses found',
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black.withOpacity(0.6),
                         ),
-                        content: Container(
-                          width: Device.screenWidth,
-                          // height: 150.0,
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SkywaText(
-                                text: 'Do you want to delete this response?',
-                                fontSize: 18.0,
-                                maxLines: 2,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              const SizedBox(height: 20.0),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  SkywaElevatedButton.save(
-                                    text: 'Cancel',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  const SizedBox(width: 20.0),
-                                  SkywaElevatedButton.delete(
-                                    text: 'Delete',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      deleteNote(noteModel: noteModel);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.delete_rounded,
-                      color: ColorThemes.errorColor,
-                    ),
-                  ),
-                ],
-                child: answerTexts.isNotEmpty
-                    ? GestureDetector(
-                        onTap: () {
-                          /// edit question
-                          editNote(noteModel: noteModel, index: index);
-                        },
-                        child: NoteRowWidget(
-                          folderModel: folderModel,
-                          noteModel: noteModel,
-                          expanded: false,
-                        ),
-                      )
-                    :
-
-                    /// empty note
-                    Container(
-                        margin: EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.0),
-                          boxShadow: [
-                            /// bottom right
-                            BoxShadow(
-                              color: Colors.grey.shade400,
-                              offset: Offset(5, 5),
-                              blurRadius: 5.0,
-                              spreadRadius: 2.0,
+                        SizedBox(height: 10.0),
+                        SkywaRichText(
+                          texts: ['Tap ', '+ ', 'to add your first response'],
+                          textStyles: [
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.6),
                             ),
-
-                            /// top left
-                            BoxShadow(
-                              color: Colors.grey.shade200,
-                              offset: const Offset(-5, -5),
-                              blurRadius: 4.0,
-                              spreadRadius: 2.0,
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: ColorThemes.errorColor,
+                            ),
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.6),
                             ),
                           ],
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: SkywaText(
-                            text: 'Empty Note',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 25.0,
-                            color: Colors.grey.shade500,
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: BouncingScrollPhysics(),
+                    itemCount: isNoteSearching
+                        ? searchedNotes.length
+                        : folderModel.notes.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      Map<String, dynamic> _note = {};
+                      if (isNoteSearching) {
+                        _note = searchedNotes[index];
+                      } else {
+                        _note = folderModel.notes[index];
+                      }
+                      // print('82: ${_note}');
+                      NoteModel noteModel = NoteModel(
+                        noteId: _note['noteId'],
+                        noteAnswer: _note['noteAnswer'],
+                        noteCreationDate: _note['noteCreationDate'],
+                      );
+                      // print('45: ${noteModel.noteAnswer}');
+                      List answerTexts = [];
+                      for (MapEntry noteAnswer
+                          in noteModel.noteAnswer.entries) {
+                        if (!isStringInvalid(text: noteAnswer.value))
+                          answerTexts.add(noteAnswer.value);
+                      }
+                      // print('answerTexts: $answerTexts');
+                      return Slidable(
+                        key: ValueKey(0),
+                        direction: Axis.horizontal,
+                        closeOnScroll: true,
+                        actionPane: const SlidableBehindActionPane(),
+                        actionExtentRatio: 0.20,
+                        secondaryActions: [
+                          /// delete question
+                          IconButton(
+                            onPressed: () {
+                              SkywaAlertDialog.error(
+                                context: context,
+                                titleText: 'Delete Question',
+                                titlePadding: const EdgeInsets.all(15.0),
+                                icon: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: ColorThemes.errorColor,
+                                  size: 45.0,
+                                ),
+                                content: Container(
+                                  width: Device.screenWidth,
+                                  // height: 150.0,
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SkywaText(
+                                        text:
+                                            'Do you want to delete this response?',
+                                        fontSize: 18.0,
+                                        maxLines: 2,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      const SizedBox(height: 20.0),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          SkywaElevatedButton.save(
+                                            text: 'Cancel',
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          const SizedBox(width: 20.0),
+                                          SkywaElevatedButton.delete(
+                                            text: 'Delete',
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                              deleteNote(noteModel: noteModel);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.delete_rounded,
+                              color: ColorThemes.errorColor,
+                            ),
                           ),
-                        ),
-                      ),
-              );
-            },
-          );
+                        ],
+                        child: answerTexts.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  /// edit question
+                                  editNote(noteModel: noteModel, index: index);
+                                },
+                                child: NoteRowWidget(
+                                  folderModel: folderModel,
+                                  noteModel: noteModel,
+                                  expanded: false,
+                                ),
+                              )
+                            :
+
+                            /// empty note
+                            Container(
+                                width: Device.screenWidth,
+                                margin: EdgeInsets.all(16.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  boxShadow: [
+                                    /// bottom right
+                                    BoxShadow(
+                                      color: Colors.grey.shade400,
+                                      offset: Offset(5, 5),
+                                      blurRadius: 5.0,
+                                      spreadRadius: 2.0,
+                                    ),
+
+                                    /// top left
+                                    BoxShadow(
+                                      color: Colors.grey.shade200,
+                                      offset: const Offset(-5, -5),
+                                      blurRadius: 4.0,
+                                      spreadRadius: 2.0,
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SkywaText(
+                                    text: 'Empty Note',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 25.0,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ),
+                      );
+                    },
+                  );
   }
 
   Widget buildQuestionsList() {
@@ -358,101 +413,140 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                   ],
                 ),
               )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: BouncingScrollPhysics(),
-                itemCount: isQuestionSearching
-                    ? searchedQuestions.length
-                    : folderModel.questions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Map<String, dynamic> _question = {};
-                  folderModel.questions[index];
-                  if (isQuestionSearching) {
-                    _question = searchedQuestions[index];
-                  } else {
-                    _question = folderModel.questions[index];
-                  }
-                  QuestionModel questionModel = QuestionModel(
-                    questionId: _question['questionId'],
-                    questionText: _question['questionText'],
-                    isRequired: _question['isRequired'],
-                    questionCreationDate: _question['questionCreationDate'],
-                    questionType: _question['questionType'],
-                    questionTypeAnswer: _question['questionTypeAnswer'],
-                  );
-                  return Slidable(
-                    direction: Axis.horizontal,
-                    actionPane: const SlidableStrechActionPane(),
-                    actionExtentRatio: 0.20,
-                    secondaryActions: [
-                      /// delete question
-                      IconButton(
-                        onPressed: () {
-                          SkywaAlertDialog.error(
-                            context: context,
-                            titleText: 'Delete Question',
-                            titlePadding: const EdgeInsets.all(15.0),
-                            icon: const Icon(
-                              Icons.warning_amber_rounded,
-                              color: ColorThemes.errorColor,
-                              size: 45.0,
+            : folderModel.questions.isEmpty
+                ? Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SkywaText(
+                          text: 'No questions found',
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black.withOpacity(0.6),
+                        ),
+                        SizedBox(height: 10.0),
+                        SkywaRichText(
+                          texts: ['Tap ', '+ ', 'to add your first question'],
+                          textStyles: [
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.6),
                             ),
-                            content: Container(
-                              width: Device.screenWidth,
-                              // height: 200.0,
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SkywaAutoSizeText(
-                                    text:
-                                        'Do you want to delete this question?\nThis question will be deleted from all your responses.',
-                                    // fontSize: 18.0,
-                                    maxLines: 4,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  const SizedBox(height: 10.0),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: ColorThemes.errorColor,
+                            ),
+                            TextStyle(
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.6),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: BouncingScrollPhysics(),
+                    itemCount: isQuestionSearching
+                        ? searchedQuestions.length
+                        : folderModel.questions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      Map<String, dynamic> _question = {};
+                      folderModel.questions[index];
+                      if (isQuestionSearching) {
+                        _question = searchedQuestions[index];
+                      } else {
+                        _question = folderModel.questions[index];
+                      }
+                      QuestionModel questionModel = QuestionModel(
+                        questionId: _question['questionId'],
+                        questionText: _question['questionText'],
+                        isRequired: _question['isRequired'],
+                        questionCreationDate: _question['questionCreationDate'],
+                        questionType: _question['questionType'],
+                        questionTypeAnswer: _question['questionTypeAnswer'],
+                      );
+                      return Slidable(
+                        direction: Axis.horizontal,
+                        actionPane: const SlidableStrechActionPane(),
+                        actionExtentRatio: 0.20,
+                        secondaryActions: [
+                          /// delete question
+                          IconButton(
+                            onPressed: () {
+                              SkywaAlertDialog.error(
+                                context: context,
+                                titleText: 'Delete Question',
+                                titlePadding: const EdgeInsets.all(15.0),
+                                icon: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: ColorThemes.errorColor,
+                                  size: 45.0,
+                                ),
+                                content: Container(
+                                  width: Device.screenWidth,
+                                  // height: 200.0,
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      SkywaElevatedButton.save(
-                                        text: 'Cancel',
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                        },
+                                      SkywaAutoSizeText(
+                                        text:
+                                            'Do you want to delete this question?\nThis question will be deleted from all your responses.',
+                                        // fontSize: 18.0,
+                                        maxLines: 4,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      const SizedBox(width: 20.0),
-                                      SkywaElevatedButton.delete(
-                                        text: 'Delete',
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          deleteQuestion(
-                                              questionModel: questionModel);
-                                        },
+                                      const SizedBox(height: 10.0),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          SkywaElevatedButton.save(
+                                            text: 'Cancel',
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          const SizedBox(width: 20.0),
+                                          SkywaElevatedButton.delete(
+                                            text: 'Delete',
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                              deleteQuestion(
+                                                  questionModel: questionModel);
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.delete_rounded,
+                              color: ColorThemes.errorColor,
                             ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.delete_rounded,
-                          color: ColorThemes.errorColor,
+                          ),
+                        ],
+                        child: GestureDetector(
+                          onTap: () {
+                            /// edit question
+                            editQuestion(questionModel: questionModel);
+                          },
+                          child:
+                              QuestionRowWidget(questionModel: questionModel),
                         ),
-                      ),
-                    ],
-                    child: GestureDetector(
-                        onTap: () {
-                          /// edit question
-                          editQuestion(questionModel: questionModel);
-                        },
-                        child: QuestionRowWidget(questionModel: questionModel)),
+                      );
+                    },
                   );
-                },
-              );
   }
 
   @override
@@ -461,6 +555,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
     super.initState();
     folderModel = widget.folderModel;
     tabController = TabController(length: 2, vsync: this);
+    widget.tabIndex != null ? tabController.index = widget.tabIndex : 0;
   }
 
   @override
@@ -518,7 +613,7 @@ class _NotesQuestionTabBarScreenState extends State<NotesQuestionTabBarScreen>
                             stringsToBeEliminated.add('noteId');*/
                         });
                       },
-                      icon: Icon(Icons.search_rounded),
+                      icon: Icon(Icons.search_rounded, color: Colors.white),
                     ),
                   ],
                 )

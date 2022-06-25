@@ -5,6 +5,7 @@ import 'package:diary_app/services/global_methods.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 
 import '../framework/widgets/skywa_text.dart';
@@ -105,7 +106,7 @@ class _NoteRowWidgetState extends State<NoteRowWidget> {
                             children: [
                               /// question
                               SkywaText(
-                                text: 'Q: ${questionTexts[noteAnswerKeyIndex]}',
+                                text: '${questionTexts[noteAnswerKeyIndex]}',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20.0,
                               ),
@@ -179,164 +180,177 @@ class _NoteRowWidgetState extends State<NoteRowWidget> {
       children: [
         ExpandableContainer(
           expanded: expanded,
-          collapsedChild: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
-                    /// bottom right
-                    BoxShadow(
-                      color: Colors.grey.shade400,
-                      offset: Offset(5, 5),
-                      blurRadius: 5.0,
-                      spreadRadius: 2.0,
-                    ),
-
-                    /// top left
-                    BoxShadow(
-                      color: Colors.grey.shade200,
-                      offset: const Offset(-5, -5),
-                      blurRadius: 4.0,
-                      spreadRadius: 2.0,
-                    ),
-                  ],
+          collapsedChild: Container(
+            width: Device.screenWidth,
+            padding: EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                /// bottom right
+                BoxShadow(
+                  color: Colors.grey.shade400,
+                  offset: Offset(5, 5),
+                  blurRadius: 5.0,
+                  spreadRadius: 2.0,
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  // itemCount: widget.noteModel.noteAnswer.entries.length,
-                  itemCount: 1,
-                  itemBuilder: (BuildContext context, int noteAnswerKeyIndex) {
-                    List questionIds = [];
-                    List questionTexts = [];
-                    List questionTypes = [];
-                    List answerTexts = [];
-                    int indexToBeShown = 0;
-                    for (MapEntry noteAnsEntry
-                        in widget.noteModel.noteAnswer.entries) {
-                      questionIds.add(noteAnsEntry.key);
-                      answerTexts.add(noteAnsEntry.value);
-                    }
-                    for (String quesId in questionIds) {
-                      for (var question in widget.folderModel.questions) {
-                        if (quesId == question['questionId']) {
-                          questionTexts.add(question['questionText']);
-                          questionTypes.add(question['questionType']);
-                        }
-                      }
-                    }
-                    // print('95: ${questionTexts}');
-                    // print('96: ${questionTypes}');
-                    for (int index = 0;
-                        index < widget.noteModel.noteAnswer.entries.length;
-                        index++) {
-                      if (!isStringInvalid(text: answerTexts[index])) {
-                        indexToBeShown = index;
-                        break;
-                      }
-                    }
 
-                    return !isStringInvalid(text: answerTexts[indexToBeShown])
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                /// top left
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  offset: const Offset(-5, -5),
+                  blurRadius: 4.0,
+                  spreadRadius: 2.0,
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              // itemCount: widget.noteModel.noteAnswer.entries.length,
+              itemCount: 1,
+              itemBuilder: (BuildContext context, int noteAnswerKeyIndex) {
+                List questionIds = [];
+                List questionTexts = [];
+                List questionTypes = [];
+                List answerTexts = [];
+                int indexToBeShown = 0;
+                for (MapEntry noteAnsEntry
+                    in widget.noteModel.noteAnswer.entries) {
+                  questionIds.add(noteAnsEntry.key);
+                  answerTexts.add(noteAnsEntry.value);
+                }
+                for (String quesId in questionIds) {
+                  for (var question in widget.folderModel.questions) {
+                    if (quesId == question['questionId']) {
+                      questionTexts.add(question['questionText']);
+                      questionTypes.add(question['questionType']);
+                    }
+                  }
+                }
+                // print('95: ${questionTexts}');
+                // print('96: ${questionTypes}');
+                for (int index = 0;
+                    index < widget.noteModel.noteAnswer.entries.length;
+                    index++) {
+                  if (!isStringInvalid(text: answerTexts[index])) {
+                    indexToBeShown = index;
+                    break;
+                  }
+                }
+
+                return !isStringInvalid(text: answerTexts[indexToBeShown])
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// question
+                          Row(
                             children: [
-                              /// question
+                              RotatedBox(
+                                quarterTurns: 1,
+                                child: Icon(Icons.pan_tool_alt_rounded),
+                              ),
+                              SizedBox(width: 5.0),
                               SkywaText(
-                                text: 'Q: ${questionTexts[indexToBeShown]}',
+                                text: questionTexts[indexToBeShown],
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20.0,
                               ),
-                              SizedBox(height: 10.0),
+                            ],
+                          ),
+                          SizedBox(height: 10.0),
 
-                              /// answer
-                              if (questionTypes[indexToBeShown] == 'Image')
-                                /*Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    child: Image.network(
-                                      answerTexts[indexToBeShown],
-                                      width: Device.screenWidth,
-                                      height: Device.screenHeight * 0.40,
-                                    ),
-                                  ),
-                                )*/
-                                Center(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        PageTransition(
-                                          child: ImageViewScreen(
-                                            imageUrl:
-                                                answerTexts[indexToBeShown],
-                                          ),
-                                          type:
-                                              PageTransitionType.rippleRightUp,
-                                        ),
-                                      );
-                                    },
-                                    child: SkywaCachedNetworkImage.clipRRect(
-                                      imageUrl: answerTexts[indexToBeShown],
-                                      height: 250.0,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                )
-                              else if (questionTypes[indexToBeShown] == 'File')
-                                Container(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    child: ListTile(
-                                      onTap: () {
-                                        setState(() {
-                                          isLoading = true;
-                                        });
-                                        GlobalMethods.downloadAndOpenFile(
-                                                url:
-                                                    answerTexts[indexToBeShown])
-                                            .then((value) {
-                                          if (mounted) {
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                          }
-                                        });
-                                      },
-                                      leading: GlobalMethods.getFileIcon(
-                                          url: answerTexts[indexToBeShown]),
-                                      title: SkywaText(
-                                        text: GlobalMethods.getFilenameFromUrl(
-                                            url: answerTexts[indexToBeShown]),
-                                        maxLines: 3,
+                          /// answer
+                          if (questionTypes[indexToBeShown] == 'Image')
+                            /*Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12.0),
+                                child: Image.network(
+                                  answerTexts[indexToBeShown],
+                                  width: Device.screenWidth,
+                                  height: Device.screenHeight * 0.40,
+                                ),
+                              ),
+                            )*/
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      child: ImageViewScreen(
+                                        imageUrl: answerTexts[indexToBeShown],
                                       ),
+                                      type: PageTransitionType.rippleRightUp,
                                     ),
+                                  );
+                                },
+                                child: SkywaCachedNetworkImage.clipRRect(
+                                  imageUrl: answerTexts[indexToBeShown],
+                                  height: 250.0,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            )
+                          else if (questionTypes[indexToBeShown] == 'File')
+                            Container(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12.0),
+                                child: ListTile(
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    GlobalMethods.downloadAndOpenFile(
+                                            url: answerTexts[indexToBeShown])
+                                        .then((value) {
+                                      if (mounted) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                      }
+                                    });
+                                  },
+                                  leading: GlobalMethods.getFileIcon(
+                                      url: answerTexts[indexToBeShown]),
+                                  title: SkywaText(
+                                    text: GlobalMethods.getFilenameFromUrl(
+                                        url: answerTexts[indexToBeShown]),
+                                    maxLines: 3,
                                   ),
-                                )
-                              else
+                                ),
+                              ),
+                            )
+                          else
+                            Row(
+                              children: [
+                                SizedBox(width: 5.0),
+                                Container(
+                                  width: 10.0,
+                                  height: 10.0,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.black, width: 2.0),
+                                  ),
+                                ),
+                                SizedBox(width: 15.0),
                                 SkywaText(
-                                  text: 'A: ${answerTexts[indexToBeShown]}',
+                                  text: answerTexts[indexToBeShown],
                                   maxLines: 1,
                                 ),
-                              SizedBox(height: 25.0),
-                            ],
-                          )
-                        : Container();
-                  },
-                ),
-              ),
-              SkywaText(
-                text:
-                    'creation date: ${widget.noteModel.noteCreationDate.toString()}',
-              ),
-            ],
+                              ],
+                            ),
+                          SizedBox(height: 25.0),
+                        ],
+                      )
+                    : Container();
+              },
+            ),
           ),
           expandedChild: Container(
             padding: EdgeInsets.all(12.0),
@@ -389,10 +403,19 @@ class _NoteRowWidgetState extends State<NoteRowWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           /// question
-                          SkywaText(
-                            text: 'Q: ${questionTexts[noteAnswerKeyIndex]}',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20.0,
+                          Row(
+                            children: [
+                              RotatedBox(
+                                quarterTurns: 1,
+                                child: Icon(Icons.pan_tool_alt_rounded),
+                              ),
+                              SizedBox(width: 5.0),
+                              SkywaText(
+                                text: '${questionTexts[noteAnswerKeyIndex]}',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20.0,
+                              ),
+                            ],
                           ),
                           SizedBox(height: 10.0),
 
@@ -450,9 +473,24 @@ class _NoteRowWidgetState extends State<NoteRowWidget> {
                               ),
                             )
                           else
-                            SkywaText(
-                              text: 'A: ${answerTexts[noteAnswerKeyIndex]}',
-                              maxLines: 1,
+                            Row(
+                              children: [
+                                SizedBox(width: 5.0),
+                                Container(
+                                  width: 10.0,
+                                  height: 10.0,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.black, width: 2.0),
+                                  ),
+                                ),
+                                SizedBox(width: 15.0),
+                                SkywaText(
+                                  text: answerTexts[noteAnswerKeyIndex],
+                                  maxLines: 1,
+                                ),
+                              ],
                             ),
                           SizedBox(height: 25.0),
                         ],

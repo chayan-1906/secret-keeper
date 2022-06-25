@@ -268,6 +268,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           textEditingController: _passwordController,
                           labelText: 'Password',
                           hintText: 'Enter your password',
+                          isObscure: true,
                           onChanged: (value) {
                             setState(() {
                               _passwordController;
