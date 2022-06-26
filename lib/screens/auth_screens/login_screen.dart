@@ -54,11 +54,21 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.canPop(context) ? Navigator.pop(context) : null;
         });
       } catch (error) {
-        GlobalMethods.authErrorDialog(
-          context,
-          'Error Occurred',
-          error.toString(),
-        );
+        String authErrorText = '';
+        if (error.toString() ==
+            '[firebase_auth/wrong-password] The password is invalid or the user does not have a password.') {
+          /// invalid username / password
+          authErrorText =
+              'The password is invalid or the user does not have a password.';
+        } else if (error.toString() ==
+            '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.') {
+          /// user not registered
+          authErrorText =
+              'There is no user record corresponding to this identifier. The user may have been deleted.';
+        } else {
+          authErrorText = error.toString();
+        }
+        GlobalMethods.authErrorDialog(context, 'Error Occurred', authErrorText);
         print('error occurred ${error.toString()}');
       } finally {
         setState(() {
@@ -139,7 +149,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               SkywaText(
                                 text: 'Secret Keeper',
                                 fontSize: 30.0,
-                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.3,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                               ),
                               SizedBox(height: 5.0),
 
@@ -147,6 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               SkywaText(
                                 text: 'Your personal notekeeper',
                                 fontSize: 20.0,
+                                color: Colors.white,
                                 fontWeight: FontWeight.w300,
                               ),
 
@@ -251,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 const EdgeInsets.symmetric(horizontal: 14.0),
                             child: TextButton(
                               onPressed: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
                                   PageTransition(
                                     type: PageTransitionType.rippleRightUp,

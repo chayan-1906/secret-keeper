@@ -36,16 +36,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             .sendPasswordResetEmail(
                 email: _emailController.text.trim().toLowerCase())
             .then(
-              (value) => Fluttertoast.showToast(
-                msg: 'Password reset link sent to $_emailAddress',
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                textColor: Colors.white,
-                fontSize: 17.0,
-              ),
+          (value) {
+            print('password reset: ${_emailController.text}');
+            return Fluttertoast.showToast(
+              msg: 'Password reset link sent your email',
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: ColorThemes.secondaryColor,
+              textColor: Colors.white,
+              fontSize: 17.0,
             );
+          },
+        );
         Navigator.pushReplacement(
           context,
           PageTransition(
@@ -93,9 +96,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             collapsedHeight: kToolbarHeight,
             centerTitle: true,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.pop(context);
               },
             ),
             floating: true,
@@ -104,7 +107,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               builder: (BuildContext context, BoxConstraints constraints) {
                 top = constraints.biggest.height;
                 return Container(
-                  color: const Color(0xFF676FA3),
+                  color: ColorThemes.primaryColor,
                   child: FlexibleSpaceBar(
                     collapseMode: CollapseMode.parallax,
                     centerTitle: true,
@@ -187,19 +190,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   /// reset password
                   Container(
-                    margin:
-                        EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
-                    width: MediaQuery.of(context).size.width,
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 15.0,
+                      vertical: 20.0,
+                    ),
+                    width: Device.screenWidth,
                     child: MaterialButton(
                       elevation: 10.0,
                       height: 50.0,
                       animationDuration: Duration(milliseconds: 100),
                       shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(30.0))),
+                        borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      ),
                       padding: EdgeInsets.symmetric(
-                          horizontal: 25.0, vertical: 10.0),
-                      color: Color(0xFF676FA3),
+                        horizontal: 25.0,
+                        vertical: 10.0,
+                      ),
+                      color: ColorThemes.primaryColor,
                       onPressed: () {
                         print(_emailAddress);
                         _submitForm();

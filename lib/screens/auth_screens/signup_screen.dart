@@ -77,11 +77,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
             .set(userModel.toMap());
         Navigator.canPop(context) ? Navigator.pop(context) : null;
       } catch (error) {
-        GlobalMethods.authErrorDialog(
-          context,
-          'Error Occurred',
-          error.toString(),
-        );
+        String authErrorText = '';
+        if (error.toString() ==
+            '[firebase_auth/weak-password] Password should be at least 6 characters') {
+          /// weak password
+          authErrorText = 'Password should be at least 6 characters';
+        } else if (error.toString() ==
+            '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
+          /// already exists
+          authErrorText =
+              'The email address is already in use by another account.';
+        } else {
+          authErrorText = error.toString();
+        }
+        GlobalMethods.authErrorDialog(context, 'Error Occurred', authErrorText);
         print('error occurred: ${error.toString()}');
       } finally {
         setState(() {
@@ -160,7 +169,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               SkywaText(
                                 text: 'Secret Keeper',
                                 fontSize: 30.0,
-                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.3,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                               ),
                               SizedBox(height: 5.0),
 
@@ -168,6 +179,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               SkywaText(
                                 text: 'Your personal notekeeper',
                                 fontSize: 20.0,
+                                color: Colors.white,
                                 fontWeight: FontWeight.w300,
                               ),
 
