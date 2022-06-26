@@ -1,16 +1,5 @@
-# diary_app
+# Secret Keeper
 
-A new Flutter project.
+A notes app
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![app_icon](https://user-images.githubusercontent.com/82430454/175807700-8e8b54ae-2b78-4c18-b083-83cb7dc87f50.png)
