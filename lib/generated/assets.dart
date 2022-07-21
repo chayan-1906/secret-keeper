@@ -2,12 +2,9 @@
 class Assets {
   Assets._();
 
-  static const String imagesClipart3295914 = 'assets/images/clipart3295914.png';
-  static const String imagesFolderIcon = 'assets/images/folder_icon.png';
-  static const String imagesImagePlaceholder =
-      'assets/images/image-placeholder.png';
-  static const String imagesNotFound = 'assets/images/not_found.png';
-  static const String imagesSplashScreen = 'assets/images/splash_screen.png';
-  static const String imagesWarning = 'assets/images/warning.png';
   static const String appIcon = 'assets/images/app_icon.png';
+  static const String imagesFolderIcon = 'assets/images/folder_icon.png';
+  static const String imagePlaceholder = 'assets/images/image-placeholder.png';
+  static const String imagesNotFound = 'assets/images/not_found.png';
+  static const String imagesWarning = 'assets/images/warning.png';
 }

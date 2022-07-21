@@ -1160,35 +1160,6 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                         ),
                       buildNotesAnswerWidget(context: context, index: index),
                       const SizedBox(height: 20.0),
-                      TextButton(
-                        onPressed: () {
-                          if (widget.noteIndex == null) {
-                            // new note
-                          } else {
-                            // edit note
-                            // print('1154: ${noteModel.noteAnswer}');
-                            prevAnswers.clear();
-                            noteModel.noteAnswer.forEach((key, value) {
-                              prevAnswers.add(value);
-                            });
-                            currentAnswers.clear();
-                            qIdTextEditingController.values.forEach((value) {
-                              currentAnswers.add(value.text);
-                            });
-                            print(prevAnswers.toString());
-                            print(currentAnswers.toString());
-                            if (prevAnswers.toString() !=
-                                currentAnswers.toString()) {
-                              /// something changed
-                              allowPop = false;
-                            } else {
-                              /// nothing changed
-                              allowPop = true;
-                            }
-                          }
-                        },
-                        child: Text('Check'),
-                      ),
                     ],
                   );
                 },

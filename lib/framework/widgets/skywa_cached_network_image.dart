@@ -71,7 +71,7 @@ class SkywaCachedNetworkImage extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8.0),
               child: Image.asset(
-                Assets.imagesImagePlaceholder,
+                Assets.imagePlaceholder,
                 height: height,
                 width: width,
                 fit: BoxFit.contain,

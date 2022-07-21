@@ -56,7 +56,7 @@ class _PhotoViewScreenState extends State<ImageViewScreen> {
               Container(
                 padding: EdgeInsets.all(8.0),
                 child: Image.asset(
-                  Assets.imagesImagePlaceholder,
+                  Assets.imagePlaceholder,
                   height: Device.screenHeight / 2,
                   width: Device.screenWidth / 2,
                   fit: BoxFit.contain,

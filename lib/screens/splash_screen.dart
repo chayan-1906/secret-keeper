@@ -54,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
             width: Device.screenWidth,
             height: Device.screenHeight,
             color: Colors.white,
-            child: Image.asset(Assets.imagesSplashScreen),
+            child: Image.asset(Assets.appIcon),
           ),
           Positioned(
             right: 0.0,

@@ -109,6 +109,7 @@ class GlobalMethods {
       content: Column(
         children: [
           SizedBox(height: 10.0),
+
           /// subtitle
           SkywaText(
             text: subtitle,
